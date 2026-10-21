@@ -224,6 +224,19 @@ func (m *Manager) Restore(serial string) error {
 	}
 	return nil
 }
+
+// RestoreAll attempts every saved device even if another is disconnected.
+// Failed devices keep their durable backups for a later retry.
+func (m *Manager) RestoreAll() error {
+	var failures []error
+	for _, serial := range m.Pending() {
+		if err := m.Restore(serial); err != nil {
+			failures = append(failures, fmt.Errorf("请连接手机 %s 后恢复代理: %w", serial, err))
+		}
+	}
+	return errors.Join(failures...)
+}
+
 func (m *Manager) InstallCertificate(serial, local string) (string, error) {
 	if _, err := m.device(serial, "push", local, CertificatePath); err != nil {
 		return "", err

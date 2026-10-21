@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>Response search preview</title></head>
+<body><div id="root"></div><script type="module">
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import Inspector from '/src/Inspector.tsx';
+import '/src/App.css';
+import '/src/style.css';
+const originalSample = '{"ret":0,"errmsg":"ok","cookie_count":0,"base_resp":{"ret":0,"errmsg":"ok","cookie_count":0,"sessionid":"svr_c39fba39a61"},"sessionid":"svr_c39fba39a61","data":{"id":9223372036854775807,"enabled":true,"empty":null,"url":"https://example.com/docs?source=mitmAny","items":[{"name":"请求预览","status":"ready"},{"name":"嵌套数据","status":"ready"}]}}';
+const sample = '<!doctype html>\n<html>\n<body>\n' + Array.from({length: 12000}, (_, i) => '<p>HTML line ' + i + ' ' + 'content '.repeat(20) + '</p>').join('\n') + '\n<p>FINAL-HTML-MARKER</p>\n</body></html>';
+function Harness(){
+ const [body,setBody]=useState(sample);
+ const [notice,setNotice]=useState('');
+ window.runtime={BrowserOpenURL:(url)=>setNotice('浏览器打开：'+url)};
+ const detail={id:'json-preview',method:'GET',url:'https://example.com/mp/jsmonitor',host:'example.com',path:'/mp/jsmonitor',scheme:'https',protocol:'HTTP/2.0',status:200,contentType:'text/html',started:Date.now(),duration:18,ttfb:8,requestSize:0,responseSize:body.length,complete:true,truncated:false,revision:1,requestHeaders:{},responseHeaders:{'Content-Type':['text/html; charset=utf-8']},requestBody:'',responseBody:btoa(unescape(encodeURIComponent(body))),requestEncoding:'base64',responseEncoding:'base64',requestCaptured:0,responseCaptured:body.length};
+ return React.createElement('div',{className:'preview-layout'},
+  React.createElement('nav',{className:'preview-controls'},
+   React.createElement('strong',null,'大 HTML 正文预览'),
+   React.createElement('button',{onClick:()=>setBody(sample)},'大 HTML'),
+   React.createElement('button',{onClick:()=>setBody(JSON.stringify({items:Array.from({length:3000},(_,i)=>({id:i,url:'https://example.com/item/'+i,active:true}))}))},'大 JSON'),
+   React.createElement('button',{onClick:()=>document.documentElement.dataset.theme='dark'},'深色'),
+   React.createElement('button',{onClick:()=>document.documentElement.dataset.theme='light'},'浅色'),
+   React.createElement('output',null,notice)),
+  React.createElement(Inspector,{detail,loading:false,onClose:()=>{},notify:setNotice})
+ );
+}
+createRoot(document.getElementById('root')).render(React.createElement(Harness));
+</script><style>
+body{background:#eef1f4}.preview-layout{display:flex;gap:32px;align-items:center;justify-content:center;height:100%;padding:24px}.preview-controls{width:190px;display:flex;flex-direction:column;gap:12px}.preview-controls button{padding:8px;background:#fff;border:1px solid #dfe4e8;border-radius:5px}.preview-controls output{overflow-wrap:anywhere;font-size:11px;line-height:1.7}.preview-layout>.inspector{width:460px;flex:none;height:calc(100vh - 48px);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+</style></body></html>

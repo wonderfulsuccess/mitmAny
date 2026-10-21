@@ -36,6 +36,7 @@ type Store struct {
 	revision     uint64
 	epoch        uint64
 	diskBytes    int64
+	previewBytes int64
 	changed      bool
 	generation   uint64
 	lastErr      string
@@ -51,6 +52,7 @@ func NewStore(dir string) (*Store, error) {
 		var saved []Detail
 		if json.Unmarshal(data, &saved) == nil {
 			for _, d := range saved {
+				d.Domain, d.RootDomain = DomainNames(d.Host)
 				d.RequestBody = ""
 				d.ResponseBody = ""
 				d.Complete = true
@@ -63,6 +65,10 @@ func NewStore(dir string) (*Store, error) {
 				s.entries[d.ID] = &item
 				s.order = append(s.order, d.ID)
 				s.diskBytes += d.RequestCaptured + d.ResponseCaptured
+				s.previewBytes += d.RequestCaptured
+				if !isHTML(d.ContentType) {
+					s.previewBytes += d.ResponseCaptured
+				}
 			}
 		}
 	}
@@ -99,12 +105,14 @@ func (s *Store) update(st *flowState, initial bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if old, ok := s.entries[d.ID]; ok {
+		d.Domain, d.RootDomain = old.Domain, old.RootDomain
 		d.RequestCaptured = old.RequestCaptured
 		d.ResponseCaptured = old.ResponseCaptured
 	} else {
 		if !initial {
 			return
 		}
+		d.Domain, d.RootDomain = DomainNames(d.Host)
 		s.order = append(s.order, d.ID)
 	}
 	s.revision++
@@ -146,6 +154,9 @@ func (s *Store) append(st *flowState, request bool, data []byte) {
 		}
 	}
 	s.diskBytes += int64(n)
+	if d := s.entries[id]; d != nil && (request || !isHTML(d.ContentType)) {
+		s.previewBytes += int64(n)
+	}
 	if n > 0 {
 		s.changed = true
 		s.generation++
@@ -153,11 +164,17 @@ func (s *Store) append(st *flowState, request bool, data []byte) {
 	s.trimLocked()
 }
 func (s *Store) trimLocked() {
-	for len(s.order) > MaxEntries || s.diskBytes > MaxDiskBytes {
+	// HTML bodies are not subject to the preview byte budget. Count-based
+	// session retention still applies, and other bodies retain their byte budget.
+	for len(s.order) > MaxEntries || s.previewBytes > MaxDiskBytes {
 		id := s.order[0]
 		s.order = s.order[1:]
 		if d := s.entries[id]; d != nil {
 			s.diskBytes -= d.RequestCaptured + d.ResponseCaptured
+			s.previewBytes -= d.RequestCaptured
+			if !isHTML(d.ContentType) {
+				s.previewBytes -= d.ResponseCaptured
+			}
 		}
 		delete(s.entries, id)
 		s.revision++
@@ -205,13 +222,14 @@ func (s *Store) Detail(id string) (Detail, error) {
 	req, _ := os.ReadFile(s.bodyPath(copy.ID, true))
 	res, _ := os.ReadFile(s.bodyPath(copy.ID, false))
 	copy.RequestBody, copy.RequestEncoding = bodyForUI(req, copy.RequestHeaders.Get("Content-Encoding"))
-	copy.ResponseBody, copy.ResponseEncoding = bodyForUI(res, copy.ResponseHeaders.Get("Content-Encoding"))
+	copy.ResponseBody, copy.ResponseEncoding = bodyForUI(res, copy.ResponseHeaders.Get("Content-Encoding"), isHTML(copy.ContentType))
 	return copy, nil
 }
-func bodyForUI(data []byte, encoding string) (string, string) {
+func bodyForUI(data []byte, encoding string, unlimitedHTML ...bool) (string, string) {
+	unlimited := len(unlimitedHTML) > 0 && unlimitedHTML[0]
 	original := data
 	codings := strings.Split(strings.ToLower(encoding), ",")
-	// Decode in reverse application order, with bounded work and memory per layer.
+	// Decode in reverse application order. HTML responses have no decoded size cap.
 	if len(codings) > 4 {
 		return base64.StdEncoding.EncodeToString(original), "compressed"
 	}
@@ -244,7 +262,11 @@ func bodyForUI(data []byte, encoding string) (string, string) {
 			closeReader = func() { _ = reader.Close() }
 		case "zstd":
 			var reader *zstd.Decoder
-			reader, err = zstd.NewReader(bytes.NewReader(data), zstd.WithDecoderConcurrency(1), zstd.WithDecoderLowmem(true), zstd.WithDecoderMaxMemory(8<<20), zstd.WithDecoderMaxWindow(8<<20))
+			options := []zstd.DOption{zstd.WithDecoderConcurrency(1), zstd.WithDecoderLowmem(true)}
+			if !unlimited {
+				options = append(options, zstd.WithDecoderMaxMemory(8<<20), zstd.WithDecoderMaxWindow(8<<20))
+			}
+			reader, err = zstd.NewReader(bytes.NewReader(data), options...)
 			if err == nil {
 				r = reader
 				closeReader = reader.Close
@@ -255,11 +277,15 @@ func bodyForUI(data []byte, encoding string) (string, string) {
 		if err != nil {
 			return base64.StdEncoding.EncodeToString(original), "compressed"
 		}
-		decoded, readErr := io.ReadAll(io.LimitReader(r, PreviewLimit+1))
+		source := r
+		if !unlimited {
+			source = io.LimitReader(r, PreviewLimit+1)
+		}
+		decoded, readErr := io.ReadAll(source)
 		if closeReader != nil {
 			closeReader()
 		}
-		if readErr != nil || len(decoded) > PreviewLimit {
+		if readErr != nil || (!unlimited && len(decoded) > PreviewLimit) {
 			return base64.StdEncoding.EncodeToString(original), "compressed"
 		}
 		data = decoded
@@ -277,6 +303,7 @@ func (s *Store) Clear() {
 	s.entries = map[string]*Detail{}
 	s.order = nil
 	s.diskBytes = 0
+	s.previewBytes = 0
 	s.epoch = s.epoch + s.revision + 1
 	s.revision = 0
 	s.removals = nil

@@ -4,6 +4,8 @@ export interface Flow {
   method: string;
   url: string;
   host: string;
+  domain?: string;
+  rootDomain?: string;
   path: string;
   scheme: string;
   protocol: string;

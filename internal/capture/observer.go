@@ -2,7 +2,9 @@ package capture
 
 import (
 	"io"
+	"mime"
 	"net/http"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -12,6 +14,11 @@ import (
 
 const PreviewLimit = 1024 * 1024
 const chunkSize = 32 * 1024
+
+func isHTML(contentType string) bool {
+	mediaType, _, _ := mime.ParseMediaType(contentType)
+	return strings.EqualFold(mediaType, "text/html") || strings.EqualFold(mediaType, "application/xhtml+xml")
+}
 
 type flowState struct {
 	mu            sync.Mutex
@@ -29,8 +36,8 @@ type event struct {
 	ack     chan struct{}
 }
 
-// Observer's hot path never waits for disk, frontend, or a queue slot.
-// The only synchronous body work is counting bytes and copying a bounded prefix.
+// Ordinary captures copy a bounded prefix without waiting for a queue slot.
+// HTML captures retain the full response, applying bounded queue backpressure.
 type Observer struct {
 	proxy.BaseAddon
 	store     *Store
@@ -147,6 +154,9 @@ func (o *Observer) wrap(f *proxy.Flow, r io.Reader, request bool) io.Reader {
 		return r
 	}
 	tap := &tapReader{Reader: r, observer: o, state: value.(*flowState), request: request}
+	if !request && f.Response != nil {
+		tap.unlimited = isHTML(f.Response.Header.Get("Content-Type"))
+	}
 	if request && f.Request.Raw() != nil {
 		tap.trailers = func() http.Header { return f.Request.Raw().Trailer }
 	}
@@ -163,6 +173,7 @@ type tapReader struct {
 	request        bool
 	seen           int64
 	previewStopped bool
+	unlimited      bool
 	trailers       func() http.Header
 }
 
@@ -191,6 +202,9 @@ func (t *tapReader) Read(p []byte) (int, error) {
 		return n, err
 	}
 	remaining := int64(PreviewLimit) - t.seen
+	if t.unlimited {
+		remaining = int64(n)
+	}
 	t.seen += int64(n)
 	if remaining <= 0 {
 		t.previewStopped = true
@@ -204,24 +218,44 @@ func (t *tapReader) Read(p []byte) (int, error) {
 	}
 	for offset := 0; offset < count; {
 		var block []byte
-		select {
-		case block = <-t.observer.blocks:
-		default:
-			t.previewStopped = true
-			t.state.lost.Store(true)
-			t.observer.dropped.Add(1)
-			return n, err
+		if t.unlimited {
+			// Apply bounded backpressure for HTML instead of dropping body chunks.
+			select {
+			case block = <-t.observer.blocks:
+			case <-t.observer.stop:
+				t.state.lost.Store(true)
+				return n, err
+			}
+		} else {
+			select {
+			case block = <-t.observer.blocks:
+			default:
+				t.previewStopped = true
+				t.state.lost.Store(true)
+				t.observer.dropped.Add(1)
+				return n, err
+			}
 		}
 		size := min(count-offset, len(block))
 		copy(block, p[offset:offset+size])
-		select {
-		case t.observer.queue <- event{state: t.state, kind: 'b', data: block[:size], request: t.request}:
-		default:
-			t.observer.blocks <- block[:chunkSize]
-			t.previewStopped = true
-			t.state.lost.Store(true)
-			t.observer.dropped.Add(1)
-			return n, err
+		if t.unlimited {
+			select {
+			case t.observer.queue <- event{state: t.state, kind: 'b', data: block[:size], request: t.request}:
+			case <-t.observer.stop:
+				t.observer.blocks <- block[:chunkSize]
+				t.state.lost.Store(true)
+				return n, err
+			}
+		} else {
+			select {
+			case t.observer.queue <- event{state: t.state, kind: 'b', data: block[:size], request: t.request}:
+			default:
+				t.observer.blocks <- block[:chunkSize]
+				t.previewStopped = true
+				t.state.lost.Store(true)
+				t.observer.dropped.Add(1)
+				return n, err
+			}
 		}
 		offset += size
 	}

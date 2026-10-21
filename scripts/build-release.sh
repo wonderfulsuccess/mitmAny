@@ -8,6 +8,29 @@ STAGING=""
 
 fail() { echo "错误：$*" >&2; exit 1; }
 cleanup() { if [[ -n "$STAGING" ]]; then rm -rf "$STAGING"; fi; }
+
+setup_node() {
+  # Non-interactive Bash does not inherit the nvm function from the user's shell.
+  if ! command -v nvm >/dev/null 2>&1; then
+    local nvm_script
+    for nvm_script in "${NVM_DIR:-$HOME/.nvm}/nvm.sh" \
+      /opt/homebrew/opt/nvm/nvm.sh /usr/local/opt/nvm/nvm.sh; do
+      if [[ -s "$nvm_script" ]]; then
+        # nvm also supports shells with nounset disabled.
+        set +u
+        source "$nvm_script" --no-use || fail "无法加载 nvm：$nvm_script"
+        set -u
+        break
+      fi
+    done
+  fi
+  if command -v nvm >/dev/null 2>&1; then
+    set +u
+    nvm use --silent 22 || fail "nvm 无法切换到 Node.js 22，请先运行 nvm install 22。"
+    set -u
+  fi
+}
+
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
@@ -16,16 +39,18 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   echo "用法：./scripts/build-release.sh"
   echo "在 macOS 上生成 Windows x64、macOS Intel、macOS Apple Silicon ZIP。"
   echo "依赖：Go、Node.js 22.12+、Wails CLI 2.15、Xcode Command Line Tools。"
+  echo "检测到 nvm 时自动切换到已安装的 Node.js 22。"
   echo "输出：build/releases/（版本号读取 wails.json）"
   exit 0
 fi
 [[ $# -eq 0 ]] || fail "不支持的参数；使用 --help 查看用法。"
 [[ "$(uname -s)" == "Darwin" ]] || fail "请在 macOS 上执行，macOS 原生编译需要 Apple SDK。"
+setup_node
 for tool in go node npm wails rsync xcrun ditto lipo unzip shasum; do
   command -v "$tool" >/dev/null 2>&1 || fail "缺少 $tool，请先安装对应依赖。"
 done
 node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 12)) process.exit(1)' \
-  || fail "需要 Node.js 22.12+；当前 $(node --version)。如使用 nvm，请先运行 nvm use 22。"
+  || fail "需要 Node.js 22.12+；当前 $(node --version)。请安装 Node.js 22.12+；使用 nvm 时运行 nvm install 22。"
 xcrun --find clang >/dev/null || fail "请先运行 xcode-select --install。"
 xcrun --show-sdk-path >/dev/null || fail "未找到 macOS SDK。"
 

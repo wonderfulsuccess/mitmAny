@@ -1,15 +1,52 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { openExternalURL } from "./bridge";
+import type { BodyMatch } from "./bodySearch";
 import { jsonDocument, visibleJsonLines } from "./jsonDocument";
 
-export function PlainCode({ text }: { text: string }) {
-  const lines = useMemo(() => text.split("\n", 5001), [text]);
-  return <div className="plain-code-scroll"><pre className="code-view">
-    {lines.slice(0, 5000).map((line, i) => <div className="code-line" key={i}><span>{i + 1}</span><code>{line || " "}</code></div>)}
-    {lines.length > 5000 ? <div className="notice">仅显示前 5,000 行；复制或保存可获取完整已捕获正文。</div> : null}
-  </pre></div>;
+export function PlainCode({ text, matches = [], active = 0 }: { text: string; matches?: BodyMatch[]; active?: number }) {
+  const scroll = useRef<HTMLDivElement>(null);
+  const lines = useMemo(() => {
+    let start = 0;
+    return text.split("\n").map(value => { const line = { value, start }; start += value.length + 1; return line; });
+  }, [text]);
+  const byLine = useMemo(() => {
+    const result = new Map<number, { match: BodyMatch; index: number }[]>();
+    matches.forEach((match, index) => {
+      // Multi-line searches highlight every covered source line.
+      for (let row = match.line; row < lines.length && lines[row].start < match.end; row++) {
+        const list = result.get(row) ?? [];
+        list.push({ match, index }); result.set(row, list);
+      }
+    });
+    return result;
+  }, [matches, lines]);
+  const virtual = useVirtualizer({ count: lines.length, getScrollElement: () => scroll.current, estimateSize: () => 18, overscan: 12 });
+  useEffect(() => {
+    if (!matches[active]) return;
+    virtual.scrollToIndex(matches[active].line, { align: "center" });
+    const frame = requestAnimationFrame(() => scroll.current?.querySelector("mark.active")?.scrollIntoView({ block: "nearest", inline: "center" }));
+    return () => cancelAnimationFrame(frame);
+  }, [matches, active, virtual]);
+  return <div ref={scroll} className="plain-code-scroll json-code" role="region" aria-label="响应正文" tabIndex={0}>
+    <div className="json-code-canvas" style={{ height: virtual.getTotalSize() }}>
+      {virtual.getVirtualItems().map(item => {
+        const line = lines[item.index];
+        let cursor = 0;
+        const parts: React.ReactNode[] = [];
+        for (const { match, index } of byLine.get(item.index) ?? []) {
+          const start = Math.max(0, match.start - line.start), end = Math.min(line.value.length, match.end - line.start);
+          parts.push(line.value.slice(cursor, start), <mark key={index} className={index === active ? "active" : ""}>{line.value.slice(start, end)}</mark>);
+          cursor = end;
+        }
+        parts.push(line.value.slice(cursor));
+        return <div className="json-code-line" key={item.index} style={{ transform: `translateY(${item.start}px)` }}>
+          <span className="json-line-number">{item.index + 1}</span><code className="json-line-content">{parts}</code>
+        </div>;
+      })}
+    </div>
+  </div>;
 }
 
 export default function JsonCode({ text, notify }: { text: string; notify: (message: string) => void }) {

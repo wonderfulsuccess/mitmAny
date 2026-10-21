@@ -193,10 +193,8 @@ func (a *App) InstallAndroidCertificate(serial string) (string, error) {
 }
 func (a *App) stopAndroidLocked() error {
 	if a.android != nil {
-		for _, serial := range a.android.Pending() {
-			if err := a.android.Restore(serial); err != nil {
-				return fmt.Errorf("请连接手机 %s 后恢复代理: %w", serial, err)
-			}
+		if err := a.android.RestoreAll(); err != nil {
+			return err
 		}
 	}
 	a.mobileSerial = ""

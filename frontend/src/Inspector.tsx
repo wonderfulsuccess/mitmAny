@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowLeft,
@@ -10,8 +10,12 @@ import {
   FileCode2,
   Globe2,
   LockKeyhole,
+  Maximize2,
+  Minimize2,
+  Search,
   X,
 } from "lucide-react";
+import { searchBody } from "./bodySearch";
 import JsonCode, { PlainCode } from "./JsonCode";
 import type { Detail, Headers } from "./types";
 import { api, size } from "./bridge";
@@ -42,16 +46,23 @@ function textForBytes(bytes: Uint8Array, mime = "") {
   try { return new TextDecoder(charset).decode(bytes); }
   catch { return new TextDecoder().decode(bytes); }
 }
-function BodyContent({
-  detail,
-  request,
-  notify,
-}: {
+type BodyProps = {
   detail: Detail;
   request: boolean;
   notify: (message: string) => void;
-}) {
+  responseSearch: string;
+  onResponseSearchChange: (query: string) => void;
+};
+function BodyContent({ detail, request, notify, responseSearch, onResponseSearchChange }: BodyProps) {
+  const [expanded, setExpanded] = useState(false);
+  const bodyView = useRef<HTMLDivElement>(null);
+  const expandButton = useRef<HTMLButtonElement>(null);
   const [mode, setMode] = useState("Pretty");
+  const query = request ? "" : responseSearch;
+  const setQuery = onResponseSearchChange;
+  const deferredQuery = useDeferredValue(query);
+  const [selection, setSelection] = useState({ query: "", index: 0 });
+  const searchInput = useRef<HTMLInputElement>(null);
   const [imageFailed, setImageFailed] = useState(false);
   const raw = request ? detail.requestBody : detail.responseBody;
   const encoding = request ? detail.requestEncoding : detail.responseEncoding;
@@ -59,6 +70,9 @@ function BodyContent({
     (request ? detail.requestHeaders : detail.responseHeaders)?.[
       "Content-Type"
     ]?.[0] ?? "";
+  const headers = request ? detail.requestHeaders : detail.responseHeaders;
+  const contentEncoding = Object.entries(headers ?? {}).find(([name]) => name.toLowerCase() === "content-encoding")?.[1]?.join(", ") ?? "";
+  const decoded = encoding === "base64" && contentEncoding && contentEncoding.toLowerCase() !== "identity";
   const normalizedMime = mime.toLowerCase();
   const isImage = normalizedMime.startsWith("image/") && !normalizedMime.includes("svg") && encoding === "base64";
   const isText = !mime || /text|json|javascript|xml|svg|form-urlencoded|event-stream/.test(normalizedMime);
@@ -67,6 +81,9 @@ function BodyContent({
     catch { return new Uint8Array(); }
   }, [raw]);
   const text = useMemo(() => isText && encoding === "base64" ? textForBytes(bytes, mime) : "", [bytes, mime, isText, encoding]);
+  const matches = useMemo(() => searchBody(text, deferredQuery), [text, deferredQuery]);
+  const activeMatch = selection.query === deferredQuery ? selection.index % Math.max(1, matches.length) : 0;
+  const moveMatch = (direction: number) => setSelection({ query: deferredQuery, index: (activeMatch + direction + matches.length) % Math.max(1, matches.length) });
   const objectURL = useMemo(() => {
     if (!raw || encoding !== "base64" || (!isImage && !mime.includes("pdf")))
       return "";
@@ -78,6 +95,42 @@ function BodyContent({
     },
     [objectURL],
   );
+  useEffect(() => {
+    if (!expanded || !bodyView.current) return;
+    const panel = bodyView.current;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const siblings: { element: HTMLElement; inert: boolean }[] = [];
+    // Keep the same viewer mounted, preserving folds, search and scroll position.
+    for (let ancestor: HTMLElement | null = panel; ancestor?.parentElement; ancestor = ancestor.parentElement) {
+      for (const sibling of ancestor.parentElement.children) {
+        if (sibling instanceof HTMLElement && sibling !== ancestor) {
+          siblings.push({ element: sibling, inert: sibling.inert });
+          sibling.inert = true;
+        }
+      }
+    }
+    panel.focus({ preventScroll: true });
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault(); event.stopPropagation(); setExpanded(false);
+      } else if (event.key === "Tab") {
+        const controls = [...panel.querySelectorAll<HTMLElement>('button:not(:disabled), input, [tabindex="0"], a[href]')].filter(element => element.getClientRects().length > 0);
+        const first = controls[0], last = controls.at(-1);
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
+          event.preventDefault(); last?.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === panel)) {
+          event.preventDefault(); first?.focus();
+        }
+      }
+    };
+    window.addEventListener("keydown", keyboard, true);
+    return () => {
+      window.removeEventListener("keydown", keyboard, true);
+      siblings.forEach(({ element, inert }) => { element.inert = inert; });
+      const target = expandButton.current ?? previousFocus;
+      if (target?.isConnected) target.focus({ preventScroll: true });
+    };
+  }, [expanded]);
   if (!raw) {
     const bodySize = request ? detail.requestSize : detail.responseSize;
     const missing = bodySize > 0;
@@ -95,8 +148,11 @@ function BodyContent({
     );
   }
   return (
-    <div className="body-view">
+    <div ref={bodyView} className={`body-view ${expanded ? "response-expanded" : ""}`}
+      role={expanded ? "dialog" : undefined} aria-modal={expanded || undefined} aria-label={expanded ? "Response 大屏浏览" : undefined}
+      tabIndex={expanded ? -1 : undefined} onKeyDown={event => { if (expanded) event.stopPropagation(); }}>
       <div className="body-toolbar">
+        {expanded ? <strong className="response-title" title={detail.url}>Response · {detail.path.split("?")[0]}</strong> : null}
         <div className="segmented">
           {["Pretty", "Raw"].map((v) => (
             <button
@@ -108,7 +164,7 @@ function BodyContent({
             </button>
           ))}
         </div>
-        <span>{size(bytes.length)}</span>
+        <span title={decoded ? `已解压 ${contentEncoding}，显示解压后的正文` : undefined}>{decoded ? `已解压 ${contentEncoding} · ` : ""}{size(bytes.length)}</span>
         <button
           title="复制正文"
           aria-label="复制正文"
@@ -131,10 +187,24 @@ function BodyContent({
         >
           <Download size={14} />
         </button>
+        {!request ? <button ref={expandButton} title={expanded ? "退出大屏浏览（Esc）" : "大屏浏览 Response"} aria-label={expanded ? "退出大屏浏览" : "大屏浏览 Response"} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>
+          {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+        </button> : null}
       </div>
+      {!request && isText && encoding === "base64" ? <div className="body-search">
+        <Search size={13} />
+        <input ref={searchInput} aria-label="搜索响应正文" placeholder="搜索 Response…" value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => {
+          if (event.key === "Enter") { event.preventDefault(); moveMatch(event.shiftKey ? -1 : 1); }
+          if (event.key === "Escape") { event.stopPropagation(); setQuery(""); }
+        }} />
+        <span role="status" aria-live="polite">{query !== deferredQuery ? "搜索中…" : query ? `${matches.length ? activeMatch + 1 : 0} / ${matches.length}` : ""}</span>
+        <button aria-label="上一个匹配" title="上一个（Shift+Enter）" disabled={!matches.length} onClick={() => moveMatch(-1)}><ArrowUp size={13} /></button>
+        <button aria-label="下一个匹配" title="下一个（Enter）" disabled={!matches.length} onClick={() => moveMatch(1)}><ArrowDown size={13} /></button>
+        {query ? <button aria-label="清除搜索" onClick={() => { setQuery(""); searchInput.current?.focus(); }}><X size={13} /></button> : null}
+      </div> : null}
       {encoding === "compressed" ? (
         <div className="notice">
-          压缩正文不完整或编码暂不支持，可保存已捕获的原始字节。
+          { /html/i.test(mime) ? "压缩正文不完整或编码暂不支持，可保存已捕获的原始字节。" : "压缩正文不完整、解压后超过 1 MiB 或编码暂不支持，可保存已捕获的原始字节。" }
         </div>
       ) : isImage && mode === "Pretty" ? (
         <div className="image-preview">
@@ -157,7 +227,7 @@ function BodyContent({
           className="pdf-preview"
         />
       ) : isText ? (
-        mode === "Pretty" ? <JsonCode text={text} notify={notify} /> : <PlainCode text={text} />
+        mode === "Pretty" && !deferredQuery ? <JsonCode text={text} notify={notify} /> : <PlainCode text={text} matches={matches} active={activeMatch} />
       ) : (
         <div className="body-empty">
           <FileCode2 size={30} />
@@ -178,7 +248,7 @@ function BodyContent({
     </div>
   );
 }
-function Body(props: { detail: Detail; request: boolean; notify: (message: string) => void }) {
+function Body(props: BodyProps) {
   if (!props.request) return <BodyContent {...props} />;
   let params: [string, string][] = [];
   try { params = [...new URL(props.detail.url).searchParams.entries()]; } catch { /* malformed capture URL */ }
@@ -204,6 +274,8 @@ export default function Inspector({
   notify: (message: string) => void;
 }) {
   const [tab, setTab] = useState<Tab>("Overview");
+  // The inspector survives request changes, temporary loading and closing details.
+  const [responseSearch, setResponseSearch] = useState("");
   const [copied, setCopied] = useState(false);
   if (!detail)
     return (
@@ -246,7 +318,12 @@ export default function Inspector({
     }
   })();
   return (
-    <aside className="inspector">
+    <aside className="inspector" onKeyDownCapture={event => {
+      if (tab === "Response" && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
+        const input = event.currentTarget.querySelector<HTMLInputElement>('.body-search input');
+        if (input) { event.preventDefault(); event.stopPropagation(); input.focus(); input.select(); }
+      }
+    }}>
       <div className="inspector-heading">
         <span className={`method ${detail.method.toLowerCase()}`}>
           {detail.method}
@@ -289,7 +366,7 @@ export default function Inspector({
       {detail.method === "CONNECT" && !detail.error ? <div className="notice">此连接仅通过 HTTPS 隧道转发，未解密内部请求或正文。请检查 CA 信任与 HTTPS 抓包设置。</div> : null}
       {detail.truncated ? (
         <div className="notice">
-          仅保存正文预览；内容可能达到 1 MiB 上限或因采集繁忙而缺失。
+          正文副本不完整，可能因采集或存储失败而缺失；非 HTML 正文保留最多 1 MiB。
         </div>
       ) : null}
       <div className={`detail-content ${tab === "Request" || tab === "Response" ? "body-content" : ""}`}>
@@ -378,6 +455,8 @@ export default function Inspector({
             detail={detail}
             request={tab === "Request"}
             notify={notify}
+            responseSearch={responseSearch}
+            onResponseSearchChange={setResponseSearch}
           />
         ) : (
           <div className="timing-panel">

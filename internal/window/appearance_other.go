@@ -2,5 +2,7 @@
 
 package window
 
-// Windows 11 uses Wails' native DWM frameless-window decorations.
-func Round() {}
+import "context"
+
+// Other platforms use their native Wails window presentation.
+func Ready(context.Context) {}

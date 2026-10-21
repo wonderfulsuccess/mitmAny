@@ -7,6 +7,8 @@ type Summary struct {
 	Method       string  `json:"method"`
 	URL          string  `json:"url"`
 	Host         string  `json:"host"`
+	Domain       string  `json:"domain"`
+	RootDomain   string  `json:"rootDomain"`
 	Path         string  `json:"path"`
 	Scheme       string  `json:"scheme"`
 	Protocol     string  `json:"protocol"`

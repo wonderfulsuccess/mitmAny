@@ -149,3 +149,38 @@ func TestCorruptBackupNotOverwritten(t *testing.T) {
 		t.Fatal("ignored corrupt backup")
 	}
 }
+
+func TestRestoreAllContinuesAfterOfflineDevice(t *testing.T) {
+	first := &phone{proxy: "null"}
+	second := &phone{proxy: "null"}
+	manager := setup(t, first)
+	manager.run = func(args ...string) (string, error) {
+		if len(args) > 1 && args[1] == "bbb" {
+			return second.run(args...)
+		}
+		return first.run(args...)
+	}
+	if err := manager.Enable("aaa"); err != nil {
+		t.Fatal(err)
+	}
+	if err := manager.Enable("bbb"); err != nil {
+		t.Fatal(err)
+	}
+	first.offline = true
+	if err := manager.RestoreAll(); err == nil {
+		t.Fatal("offline device must report a failure")
+	}
+	if pending := manager.Pending(); len(pending) != 1 || pending[0] != "aaa" {
+		t.Fatal("wrong pending devices", pending)
+	}
+	if second.proxy != "null" || second.reverse {
+		t.Fatal("connected second device was not restored")
+	}
+	first.offline = false
+	if err := manager.RestoreAll(); err != nil {
+		t.Fatal(err)
+	}
+	if len(manager.Pending()) != 0 || first.proxy != "null" || first.reverse {
+		t.Fatal("retry failed")
+	}
+}

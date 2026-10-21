@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -603,5 +604,162 @@ func TestRequestDetailRetainsBodiesAndURLParameters(t *testing.T) {
 				})
 			}
 		})
+	}
+}
+
+func TestGzipHTMLResponseIsDecodedForPreview(t *testing.T) {
+	html := []byte("<!doctype html><html><body><h1>压缩响应预览</h1></body></html>")
+	var compressed bytes.Buffer
+	writer := gzip.NewWriter(&compressed)
+	if _, err := writer.Write(html); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Write(compressed.Bytes())
+	}))
+	defer origin.Close()
+	client, store, _ := testProxy(t, true)
+	response, err := client.Get(origin.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := io.ReadAll(response.Body)
+	response.Body.Close()
+	if err != nil || !bytes.Equal(raw, compressed.Bytes()) {
+		t.Fatal("forwarding changed gzip bytes", err)
+	}
+	eventually(t, func() bool {
+		batch := store.Batch(0, 0)
+		if len(batch.Flows) != 1 || !batch.Flows[0].Complete {
+			return false
+		}
+		d, err := store.Detail(batch.Flows[0].ID)
+		if err != nil {
+			return false
+		}
+		preview, err := base64.StdEncoding.DecodeString(d.ResponseBody)
+		return err == nil && bytes.Equal(preview, html) && d.ResponseEncoding == "base64" && d.ResponseHeaders.Get("Content-Encoding") == "gzip"
+	})
+	// Incomplete gzip must remain identifiable as compressed bytes.
+	_, encoding := bodyForUI(compressed.Bytes()[:compressed.Len()/2], "gzip")
+	if encoding != "compressed" {
+		t.Fatalf("incomplete gzip returned %q", encoding)
+	}
+}
+
+func TestLargeHTMLIsCapturedAndDecodedInFull(t *testing.T) {
+	// Poorly compressible HTML exceeds both the wire capture limit and decoded limit.
+	var html bytes.Buffer
+	html.WriteString("<!doctype html><html><body>\n")
+	random := rand.New(rand.NewSource(42))
+	for i := 0; i < 90000; i++ {
+		fmt.Fprintf(&html, "<p>%016x%016x</p>\n", random.Uint64(), random.Uint64())
+	}
+	html.WriteString("<p>END-OF-LARGE-HTML</p></body></html>")
+	var zipped bytes.Buffer
+	zw := gzip.NewWriter(&zipped)
+	zw.Write(html.Bytes())
+	zw.Close()
+	if zipped.Len() <= PreviewLimit {
+		t.Fatal("fixture must exceed wire preview limit")
+	}
+	for _, compressed := range []bool{false, true} {
+		t.Run(fmt.Sprint(compressed), func(t *testing.T) {
+			body := html.Bytes()
+			if compressed {
+				body = zipped.Bytes()
+			}
+			origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if compressed {
+					w.Header().Set("Content-Encoding", "gzip")
+				}
+				w.Write(body)
+			}))
+			defer origin.Close()
+			client, store, _ := testProxy(t, true)
+			response, err := client.Get(origin.URL)
+			if err != nil {
+				t.Fatal(err)
+			}
+			forwarded, err := io.ReadAll(response.Body)
+			response.Body.Close()
+			if err != nil || !bytes.Equal(forwarded, body) {
+				t.Fatal("forwarded body changed", err)
+			}
+			eventually(t, func() bool {
+				batch := store.Batch(0, 0)
+				if len(batch.Flows) != 1 || !batch.Flows[0].Complete {
+					return false
+				}
+				d, err := store.Detail(batch.Flows[0].ID)
+				if err != nil {
+					return false
+				}
+				decoded, _ := base64.StdEncoding.DecodeString(d.ResponseBody)
+				return !d.Truncated && d.ResponseCaptured == int64(len(body)) && d.ResponseEncoding == "base64" && bytes.Equal(decoded, html.Bytes())
+			})
+			// The exception is HTML-specific; other encoded bodies remain bounded.
+			if compressed {
+				_, encoding := bodyForUI(body, "gzip")
+				if encoding != "compressed" {
+					t.Fatal("non-HTML decoding must stay bounded")
+				}
+			}
+		})
+	}
+}
+
+func TestHTMLDoesNotConsumePreviewBudget(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Exercise accounting beyond 256 MiB without allocating a huge fixture.
+	store.entries["html"] = &Detail{Summary: Summary{ID: "html", ContentType: "text/html"}, ResponseCaptured: MaxDiskBytes + 1}
+	store.order = []string{"html"}
+	store.diskBytes = MaxDiskBytes + 1
+	store.changed = true
+	store.trimLocked()
+	if len(store.order) != 1 {
+		t.Fatal("HTML evicted by byte budget")
+	}
+	store.Flush()
+	reopened, err := NewStore(store.dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(reopened.order) != 1 || reopened.previewBytes != 0 || reopened.diskBytes != MaxDiskBytes+1 {
+		t.Fatal("HTML budget not restored correctly")
+	}
+	reopened.Clear()
+	if reopened.previewBytes != 0 || reopened.diskBytes != 0 {
+		t.Fatal("clear did not reset budget")
+	}
+}
+
+func TestHARImportRetainsLargeHTML(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	html := "<html><body>" + strings.Repeat("a", PreviewLimit+100) + "END</body></html>"
+	document := fmt.Sprintf(`{"log":{"version":"1.2","entries":[{"request":{"method":"GET","url":"https://example.test/large"},"response":{"status":200,"content":{"mimeType":"text/html","text":%q}}}]}}`, html)
+	count, err := store.ImportHAR(strings.NewReader(document))
+	if err != nil || count != 1 {
+		t.Fatal(count, err)
+	}
+	d, err := store.Detail(store.Batch(0, 0).Flows[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := base64.StdEncoding.DecodeString(d.ResponseBody)
+	if string(body) != html || d.Truncated || store.previewBytes != 0 {
+		t.Fatal("imported HTML was limited")
 	}
 }

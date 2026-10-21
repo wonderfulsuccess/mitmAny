@@ -4,6 +4,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -11,11 +12,11 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Activity,
+  TriangleAlert,
   ArrowDown,
   ArrowDownToLine,
   ArrowUpDown,
-  ChevronDown,
-  ChevronRight,
+  ArrowUp,
   CircleHelp,
   FolderOpen,
   Globe2,
@@ -29,6 +30,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
+  Pin,
   Search,
   Settings2,
   ShieldCheck,
@@ -36,12 +38,17 @@ import {
   Smartphone,
   Star,
   Trash2,
-  Wifi,
   X,
   Zap,
 } from "lucide-react";
 import type { AndroidState, AppState, Certificate, Detail, Flow } from "./types";
 import { api, errorText, isDesktop, resourceType, size } from "./bridge";
+import { domainName, groupDomains, searchDomainGroups } from "./domainGroups";
+import { anchorOffset, listAnchor, REQUEST_ROW_HEIGHT } from "./listScroll";
+import type { ListAnchor } from "./listScroll";
+import { newestRequestIndex, sortRequests } from "./requestSort";
+import type { RequestSort, RequestSortKey } from "./requestSort";
+import RequestAge from "./RequestAge";
 import RequestMenu from "./RequestMenu";
 import Inspector from "./Inspector";
 import "./App.css";
@@ -71,6 +78,25 @@ const initialState: AppState = {
   storageError: "",
   dataDirectory: "",
 };
+const requestColumns: { key: RequestSortKey; label: string; description: string }[] = [
+  { key: "status", label: "Status", description: "状态码" },
+  { key: "method", label: "Method", description: "请求方法" },
+  { key: "name", label: "Name / Host", description: "请求路径与域名" },
+  { key: "type", label: "Type", description: "资源类型" },
+  { key: "size", label: "Size", description: "响应大小" },
+  { key: "age", label: "距今", description: "请求发生时间，逆序为最新在前" },
+  { key: "duration", label: "Time", description: "请求耗时" },
+  { key: "waterfall", label: "Waterfall", description: "瀑布图总耗时" },
+];
+function measureDomain(button: HTMLElement) {
+  const label = button.querySelector<HTMLElement>(".domain-name");
+  const text = label?.querySelector<HTMLElement>(".domain-scroll");
+  if (!label || !text) return;
+  const overflow = Math.max(0, text.scrollWidth - label.clientWidth);
+  label.dataset.overflow = String(overflow > 1);
+  label.style.setProperty("--domain-offset", `${-overflow}px`);
+  label.style.setProperty("--domain-duration", `${Math.max(3, overflow / 30 + 1)}s`);
+}
 function App() {
   const [state, setState] = useState(initialState);
   const [flows, setFlows] = useState<Flow[]>([]);
@@ -81,8 +107,13 @@ function App() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
+  const [domainQuery, setDomainQuery] = useState("");
+  const [domainGrouped, setDomainGrouped] = useState(() => localStorage.getItem("mitmAny:domain-grouped") !== "false");
+  useEffect(() => { localStorage.setItem("mitmAny:domain-grouped", String(domainGrouped)); }, [domainGrouped]);
   const [type, setType] = useState("All");
   const [host, setHost] = useState("");
+  const [hostScope, setHostScope] = useState<"host" | "root">("host");
+  const [expandedDomains, setExpandedDomains] = useState<Map<string, boolean>>(() => new Map());
   const [view, setView] = useState("all");
   const [requestMenu, setRequestMenu] = useState<{ flow: Flow; x: number; y: number; anchor: HTMLElement } | null>(null);
   const closeRequestMenu = useCallback(() => setRequestMenu(null), []);
@@ -127,8 +158,11 @@ function App() {
     const height = analysis.current?.clientHeight || 700;
     return Math.max(220 / height, Math.min(1 - 238 / height, ratio));
   };
-  const [ascending, setAscending] = useState(true);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [sort, setSort] = useState<RequestSort>({ key: "age", direction: "desc" });
+  const [autoScroll, setAutoScroll] = useState(() => localStorage.getItem("mitmAny:follow-latest") !== "false");
+  useEffect(() => { localStorage.setItem("mitmAny:follow-latest", String(autoScroll)); }, [autoScroll]);
+  const viewportAnchor = useRef<ListAnchor | null>(null);
+  const previousScrollMode = useRef({ scope: "", follow: autoScroll });
   const scroll = useRef<HTMLDivElement>(null);
   const search = useRef<HTMLInputElement>(null);
   const keyboardSelection = useRef(false);
@@ -247,17 +281,14 @@ function App() {
       active = false;
     };
   }, [selected, selectedRevision, notify]);
-  const domains = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const f of flows) map.set(f.host, (map.get(f.host) || 0) + 1);
-    return [...map].sort((a, b) => b[1] - a[1]);
-  }, [flows]);
+  const domains = useMemo(() => groupDomains(flows, domainGrouped), [flows, domainGrouped]);
+  const filteredDomains = useMemo(() => searchDomainGroups(domains, domainQuery), [domains, domainQuery]);
   const visible = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
     const starred = new Set(stars);
     const result = flows.filter(
       (f) =>
-        (!host || f.host === host) &&
+        (!host || (hostScope === "root" ? (f.rootDomain || domainName(f)) === host : domainName(f) === host)) &&
         (view !== "starred" || starred.has(f.id)) &&
         (view !== "errors" || !!f.error || f.status >= 400) &&
         (type === "All" || resourceType(f.contentType, f.url) === type) &&
@@ -266,18 +297,32 @@ function App() {
             .toLowerCase()
             .includes(q)),
     );
-    return ascending ? result : result.reverse();
-  }, [flows, deferredQuery, host, view, stars, type, ascending]);
+    return sortRequests(result, sort, resourceType);
+  }, [flows, deferredQuery, host, hostScope, view, stars, type, sort]);
   const virtual = useVirtualizer({
     count: visible.length,
     getScrollElement: () => scroll.current,
-    estimateSize: () => 38,
+    estimateSize: () => REQUEST_ROW_HEIGHT,
+    getItemKey: index => visible[index].id,
     overscan: 15,
   });
-  useEffect(() => {
-    if (autoScroll && ascending && visible.length)
-      virtual.scrollToIndex(visible.length - 1, { align: "end" });
-  }, [visible.length, autoScroll, ascending]);
+  const scrollScope = JSON.stringify([host, hostScope, view, type, deferredQuery, sort.key, sort.direction]);
+  useLayoutEffect(() => {
+    const element = scroll.current;
+    if (!element) return;
+    const previous = previousScrollMode.current;
+    const scopeChanged = previous.scope !== scrollScope;
+    if (autoScroll && visible.length) {
+      virtual.scrollToIndex(newestRequestIndex(visible), { align: sort.key === "age" ? sort.direction === "asc" ? "end" : "start" : "auto" });
+    } else if (scopeChanged) {
+      virtual.scrollToOffset(0);
+    } else if (!previous.follow) {
+      const offset = anchorOffset(visible, viewportAnchor.current);
+      if (offset !== null && Math.abs(element.scrollTop - offset) > 0.5) virtual.scrollToOffset(offset);
+    }
+    viewportAnchor.current = listAnchor(visible, element.scrollTop);
+    previousScrollMode.current = { scope: scrollScope, follow: autoScroll };
+  }, [visible, autoScroll, sort, scrollScope, virtual]);
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       if (document.querySelector('[role="menu"]')) return;
@@ -383,10 +428,7 @@ function App() {
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
   };
-  const maxDuration = Math.max(
-    100,
-    ...visible.slice(-500).map((f) => f.duration),
-  );
+  const maxDuration = visible.reduce((maximum, flow) => Math.max(maximum, flow.duration), 100);
   const changeView = (v: string) => {
     setView(v);
     setHost("");
@@ -424,7 +466,7 @@ function App() {
             <span className="title-mark">
               <Activity size={13} />
             </span>
-            mitmAny <span className="version">0.1</span>
+            mitmAny <span className="version">1.1</span>
           </div>
         </div>
         <div className="titlebar-workspace">
@@ -451,11 +493,14 @@ function App() {
                   : "All requests")}
           </h1>
           <span
-            className={`live-badge ${capturing ? "live" : ""}`}
+            className={`live-badge ${capturing ? "live" : ""} ${stats.dropped ? "capture-warning" : ""}`}
+            title={`${capturing ? (state.recording ? android.enabled ? "Android 采集中" : "正在采集" : "采集记录已暂停") : "采集已停止"} · 流式采集 · ${stats.dropped ? `${stats.dropped} 个采集事件未能保存` : "无采集事件丢失"}`}
+            aria-label={`${capturing ? state.recording ? "正在采集" : "采集记录已暂停" : "采集已停止"}，${stats.dropped ? `${stats.dropped} 个采集事件未能保存` : "无采集事件丢失"}`}
             role="status"
           >
             <span />
-            {capturing ? (state.recording ? "LIVE" : "PAUSED") : "IDLE"}
+            <b className="live-label">{capturing ? (state.recording ? "LIVE" : "PAUSED") : "IDLE"}</b>
+            {stats.dropped ? <TriangleAlert size={11} aria-hidden="true" /> : null}
           </span>
           <div className="titlebar-drag-space" />
           <div
@@ -463,25 +508,7 @@ function App() {
             role="toolbar"
             aria-label="流量工具"
           >
-            <button
-              className={`titlebar-action ${state.running ? "connected" : ""}`}
-              aria-label="代理设置"
-              title={`${state.running ? (state.systemProxy ? "系统代理已连接" : "手动代理运行中") : "代理未启动"} · ${state.address}`}
-              onClick={() => setSettingsOpen(true)}
-            >
-              <Wifi size={16} />
-            </button>
-            <button
-              className={`titlebar-action ${certificate?.trusted ? "trusted" : ""}`}
-              aria-label="证书管理"
-              title={
-                certificate?.trusted ? "HTTPS 证书已信任" : "设置 HTTPS 证书"
-              }
-              onClick={() => setCertOpen(true)}
-            >
-              <ShieldCheck size={16} />
-            </button>
-            <button className={`titlebar-action android-entry ${android.enabled ? "connected" : ""}`} aria-label="Android 手机代理" title={android.pending.length ? "Android 手机代理 · 有已配置或待恢复设备" : "Android 手机代理与 CA 安装"} onClick={() => setAndroidOpen(true)}><Smartphone size={16} /><span>Android{android.enabled ? " · ON" : android.pending.length ? " · 待恢复" : ""}</span></button>
+            <button className={`titlebar-action android-entry ${android.enabled ? "connected" : ""}`} aria-label="Android 手机代理" title={android.enabled ? "Android 手机代理已开启" : android.pending.length ? "Android 手机代理 · 有待恢复设备" : "Android 手机代理与 CA 安装"} onClick={() => setAndroidOpen(true)}><Smartphone size={16} /></button>
             <span className="titlebar-divider" />
             <button
               className="titlebar-action"
@@ -527,11 +554,11 @@ function App() {
             </button>
             <button
               className="titlebar-action"
-              title="使用帮助与设置"
-              aria-label="使用帮助与设置"
+              title="Settings · 设置"
+              aria-label="设置"
               onClick={() => setSettingsOpen(true)}
             >
-              <CircleHelp size={16} />
+              <Settings2 size={16} />
             </button>
           </div>
         </div>
@@ -541,16 +568,6 @@ function App() {
         <aside className="sidebar" id="workspace-sidebar" onClick={e => {
           if (compact && (e.target as HTMLElement).closest("button")) { setMobileSidebarOpen(false); setSelected(null); }
         }}>
-          <div className="workspace-picker">
-            <span className="workspace-icon">
-              <Network size={18} />
-            </span>
-            <div>
-              <strong>My workspace</strong>
-              <span>Personal · On this device</span>
-            </div>
-            <ChevronDown size={13} />
-          </div>
           <div className="nav-label">WORKSPACE</div>
           <nav>
             <button
@@ -584,61 +601,65 @@ function App() {
             </button>
           </nav>
           <div className="nav-label domains-label">
-            DOMAINS<span>{domains.length}</span>
+            DOMAINS<span aria-live="polite">{domainQuery.trim() ? `${filteredDomains.length}/${domains.length}` : domains.length}</span>
+            <button className="domain-mode" aria-label={`域名展示方式：${domainGrouped ? "主域名分组" : "子域名平铺"}，点击切换`} aria-pressed={domainGrouped} title={domainGrouped ? "切换为所有域名平铺" : "切换为主域名分组"}
+              onClick={e => { e.stopPropagation(); setDomainGrouped(value => !value); setExpandedDomains(new Map()); }}>
+              {domainGrouped ? "分组" : "平铺"}
+            </button>
+          </div>
+          <div className="domain-search">
+            <Search size={13} />
+            <input
+              type="search" aria-label="搜索域名" placeholder="搜索域名…" value={domainQuery}
+              onChange={e => { setDomainQuery(e.target.value); setExpandedDomains(new Map()); }}
+              onKeyDown={e => {
+                if (e.key === "Escape" && domainQuery) { e.stopPropagation(); setDomainQuery(""); }
+              }}
+            />
+            {domainQuery ? <button aria-label="清空域名搜索" title="清空域名搜索" onClick={e => { e.stopPropagation(); setDomainQuery(""); }}><X size={12} /></button> : null}
           </div>
           <div className="domain-list">
-            {domains.length ? (
-              domains.map(([name, count]) => (
-                <button
-                  title={name}
-                  className={host === name ? "domain active" : "domain"}
-                  key={name}
-                  onClick={() => {
-                    setHost(host === name ? "" : name);
-                    setView("all");
-                  }}
-                >
-                  <ChevronRight size={11} />
-                  <Globe2 size={14} />
-                  <span>{name}</span>
-                  <small>{count}</small>
-                </button>
-              ))
+            {filteredDomains.length ? (
+              filteredDomains.map(group => {
+                const expandable = group.children.length > 1 || group.children[0]?.name !== group.name;
+                const expanded = expandedDomains.get(group.name) ?? !!domainQuery.trim();
+                return <div className="domain-group" key={group.name}>
+                    <button
+                      className={host === group.name && (domainGrouped ? hostScope === "root" || !expandable : hostScope === "host") ? "domain active" : "domain"}
+                      title={`${group.name} · ${expandable ? `点击${expanded ? "收起" : "展开"}子域名` : "筛选此域名的请求"}`}
+                      aria-expanded={expandable ? expanded : undefined}
+                      onMouseEnter={e => measureDomain(e.currentTarget)} onFocus={e => measureDomain(e.currentTarget)}
+                      onClick={e => {
+                        if (expandable) {
+                          if (compact) e.stopPropagation();
+                          setExpandedDomains(old => { const next = new Map(old); next.set(group.name, !expanded); return next; });
+                        }
+                        const scope = domainGrouped ? "root" : "host";
+                        setHost(expandable ? group.name : host === group.name && hostScope === scope ? "" : group.name);
+                        setHostScope(scope); setView("all");
+                      }}
+                    >
+                      <span className="domain-name"><span className="domain-static">{group.name}</span><span className="domain-scroll" aria-hidden="true">{group.name}</span></span>
+                      <small>{group.count}</small>
+                    </button>
+                  {expandable && expanded ? <div className="domain-children">
+                    {group.children.map(child => <button
+                      key={child.name} title={child.name} className={host === child.name && hostScope === "host" ? "domain active" : "domain"}
+                      onMouseEnter={e => measureDomain(e.currentTarget)} onFocus={e => measureDomain(e.currentTarget)}
+                      onClick={() => { setHost(host === child.name && hostScope === "host" ? "" : child.name); setHostScope("host"); setView("all"); }}>
+                      <span className="domain-name"><span className="domain-static">{child.name}</span><span className="domain-scroll" aria-hidden="true">{child.name}</span></span><small>{child.count}</small>
+                    </button>)}
+                  </div> : null}
+                </div>;
+              })
             ) : (
               <div className="domain-placeholder">
                 <Globe2 size={16} />
                 <p>
-                  Captured hosts
-                  <br />
-                  will appear here.
+                  {domains.length ? "没有匹配的域名" : <>Captured hosts<br />will appear here.</>}
                 </p>
               </div>
             )}
-          </div>
-          <div className="sidebar-bottom">
-            <div className="local-card">
-              <span>
-                <HardDrive size={15} />
-                Private by default
-              </span>
-              <p>Your traffic stays on this device.</p>
-            </div>
-            <button className="nav-item" onClick={() => setCertOpen(true)}>
-              <ShieldCheck size={16} />
-              CA certificate
-              <span
-                className={`tiny-status ${certificate?.trusted ? "ok" : ""}`}
-              />
-            </button>
-            <button className="nav-item" onClick={() => setSettingsOpen(true)}>
-              <Settings2 size={16} />
-              Settings<span className="shortcut">⌘ ,</span>
-            </button>
-            <div className="sidebar-brand">
-              <Activity size={15} />
-              <strong>mitmAny</strong>
-              <span>BUILT FOR THE DETAILS</span>
-            </div>
           </div>
         </aside>
         <main className="main-workspace">
@@ -689,6 +710,10 @@ function App() {
                     </button>
                   ) : null}
                 </label>
+                <div className="scroll-mode" role="group" aria-label="流量列表滚动模式">
+                  <button className={autoScroll ? "active" : ""} aria-pressed={autoScroll} title="触底：始终跟随最新请求" onClick={() => setAutoScroll(true)}><ArrowDown size={12} />触底</button>
+                  <button className={!autoScroll ? "active" : ""} aria-pressed={!autoScroll} title="定住：保持当前阅读位置，手动滚动" onClick={() => setAutoScroll(false)}><Pin size={12} />定住</button>
+                </div>
                 <button
                   className="icon-button"
                   aria-label={
@@ -725,18 +750,6 @@ function App() {
                     {f}
                   </button>
                 ))}
-                <span />
-                <button
-                  className={
-                    autoScroll ? "auto-scroll active-scroll" : "auto-scroll"
-                  }
-                  title="自动滚动到最新请求"
-                  aria-label="自动滚动"
-                  aria-pressed={autoScroll}
-                  onClick={() => setAutoScroll(!autoScroll)}
-                >
-                  <ArrowDown size={12} />
-                </button>
               </div>
               <div
                 className="request-table"
@@ -745,21 +758,18 @@ function App() {
                 aria-rowcount={visible.length + 1}
               >
                 <div className="table-head request-grid" role="row">
-                  <span role="columnheader">Status</span>
-                  <span role="columnheader">Method</span>
-                  <span role="columnheader">Name / Host</span>
-                  <span role="columnheader">Type</span>
-                  <span role="columnheader">Size</span>
-                  <button
-                    role="columnheader"
-                    onClick={() => setAscending(!ascending)}
-                  >
-                    Time
-                    <ArrowUpDown size={10} />
-                  </button>
-                  <span role="columnheader">Waterfall</span>
+                  {requestColumns.map(column => {
+                    const active = sort.key === column.key;
+                    const ascending = active && sort.direction === "asc";
+                    return <div key={column.key} role="columnheader" aria-sort={active ? ascending ? "ascending" : "descending" : "none"} className={active ? "sorted-column" : ""}>
+                      <button title={`${column.description} · 点击${active ? ascending ? "逆序" : "正序" : "正序"}排序`}
+                        onClick={() => setSort(current => ({ key: column.key, direction: current.key === column.key && current.direction === "asc" ? "desc" : "asc" }))}>
+                        <span>{column.label}</span>{active ? ascending ? <ArrowUp size={9} /> : <ArrowDown size={9} /> : <ArrowUpDown size={9} />}
+                      </button>
+                    </div>;
+                  })}
                 </div>
-                <div className="table-scroll" ref={scroll}>
+                <div className="table-scroll" ref={scroll} onScroll={e => { viewportAnchor.current = listAnchor(visible, e.currentTarget.scrollTop); }}>
                   {visible.length ? (
                     <div
                       style={{
@@ -805,8 +815,9 @@ function App() {
                             <span
                               role="cell"
                               className={`method ${f.method.toLowerCase()}`}
+                              title={f.method}
                             >
-                              {f.method}
+                              {f.method.slice(0, 4)}
                             </span>
                             <span
                               role="cell"
@@ -825,6 +836,7 @@ function App() {
                             <span role="cell" className="number">
                               {size(f.responseSize)}
                             </span>
+                            <span role="cell" className="number request-age"><RequestAge started={f.started} /></span>
                             <span role="cell" className="number">
                               {f.duration < 1000
                                 ? `${Math.round(f.duration)} ms`
@@ -944,7 +956,7 @@ function App() {
               starred={stars.includes(requestMenu.flow.id)}
               onClose={closeRequestMenu}
               onStar={() => setStars(old => old.includes(requestMenu.flow.id) ? old.filter(id => id !== requestMenu.flow.id) : [...old, requestMenu.flow.id])}
-              onFilter={() => { setHost(requestMenu.flow.host); setView("all"); if (compact) setSelected(null); }}
+              onFilter={() => { setHost(domainName(requestMenu.flow)); setHostScope("host"); setView("all"); if (compact) setSelected(null); }}
               notify={notify}
             /> : null}
             <Inspector
@@ -955,24 +967,7 @@ function App() {
               notify={notify}
             />
           </div>
-          <footer className="app-status">
-            <span>
-              <span className={`dot ${capturing ? "green" : ""}`} />
-              {capturing ? (android.enabled ? "Android capture running" : "Capture running") : "Capture stopped"}
-            </span>
-            <span>
-              <Zap size={11} />
-              Stream-first capture
-            </span>
-            <span>
-              {stats.dropped
-                ? `${stats.dropped} capture events skipped`
-                : "No capture events dropped"}
-            </span>
-            <span className="status-right">
-              HTTP / HTTPS<span>·</span>1 MiB body preview<span>·</span>v0.1.2
-            </span>
-          </footer>
+
         </main>
       </div>
       {androidOpen ? <Suspense fallback={null}><AndroidDialog onClose={() => setAndroidOpen(false)} onUpdate={setAndroid} /></Suspense> : null}
@@ -993,6 +988,8 @@ function App() {
           system={systemProxy}
           setSystem={setSystemProxy}
           onClose={() => setSettingsOpen(false)}
+          certificate={certificate}
+          onOpenCertificate={() => { setSettingsOpen(false); setCertOpen(true); }}
           notify={notify}
         />
       ) : null}
@@ -1015,6 +1012,8 @@ function Settings({
   system,
   setSystem,
   onClose,
+  certificate,
+  onOpenCertificate,
   notify,
 }: {
   state: AppState;
@@ -1023,6 +1022,8 @@ function Settings({
   system: boolean;
   setSystem: (v: boolean) => void;
   onClose: () => void;
+  certificate: Certificate | null;
+  onOpenCertificate: () => void;
   notify: (s: string) => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -1048,7 +1049,16 @@ function Settings({
         </button>
       </div>
       <h2>Make yourself at home.</h2>
-      <p className="settings-description">网络接管方式、界面与本地数据。</p>
+      <p className="settings-description">网络接管方式、CA 证书、界面与本地数据。</p>
+      <div className="setting-row">
+        <div>
+          <strong>CA Certificate</strong>
+          <span>{certificate?.trusted ? "当前 CA 已信任，可用于 HTTPS 抓包" : certificate?.exists ? "当前 CA 尚未信任" : "配置 HTTPS 抓包所需的 CA 证书"}</span>
+        </div>
+        <button className="secondary" onClick={onOpenCertificate}>
+          <ShieldCheck size={15} /> 管理证书
+        </button>
+      </div>
       <label className="setting-row">
         <div>
           <strong>System proxy</strong>

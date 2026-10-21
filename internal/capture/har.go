@@ -113,9 +113,16 @@ func (s *Store) ImportHAR(reader io.Reader) (int, error) {
 				res = nil
 			}
 		}
-		truncated := e.Meta.Truncated || len(req) > PreviewLimit || len(res) > PreviewLimit
+		contentType := e.Response.Content.MimeType
+		if contentType == "" {
+			contentType = headers(e.Response.Headers).Get("Content-Type")
+		}
+		html := isHTML(contentType)
+		truncated := e.Meta.Truncated || len(req) > PreviewLimit || (!html && len(res) > PreviewLimit)
 		req = req[:min(len(req), PreviewLimit)]
-		res = res[:min(len(res), PreviewLimit)]
+		if !html {
+			res = res[:min(len(res), PreviewLimit)]
+		}
 		requestHeaders, responseHeaders := headers(e.Request.Headers), headers(e.Response.Headers)
 		// HAR content is decoded per the format. Don't decompress it a second time.
 		if e.Meta.ResponseEncoding != "compressed" {
@@ -127,7 +134,7 @@ func (s *Store) ImportHAR(reader io.Reader) (int, error) {
 		if responseHeaders.Get("Content-Type") == "" {
 			responseHeaders.Set("Content-Type", e.Response.Content.MimeType)
 		}
-		st := &flowState{detail: Detail{Summary: Summary{ID: uuid.NewString(), Method: e.Request.Method, URL: u.String(), Host: u.Host, Path: u.RequestURI(), Scheme: u.Scheme, Protocol: e.Request.Protocol, Status: e.Response.Status, ContentType: e.Response.Content.MimeType, Started: started.UnixMilli(), Duration: max(0, e.Time), TTFB: max(0, e.Timings.Wait), Complete: true, Error: e.Meta.Error}, RequestHeaders: requestHeaders, ResponseHeaders: responseHeaders, RequestTrailers: e.Meta.RequestTrailers, ResponseTrailers: e.Meta.ResponseTrailers}}
+		st := &flowState{detail: Detail{Summary: Summary{ID: uuid.NewString(), Method: e.Request.Method, URL: u.String(), Host: u.Host, Path: u.RequestURI(), Scheme: u.Scheme, Protocol: e.Request.Protocol, Status: e.Response.Status, ContentType: contentType, Started: started.UnixMilli(), Duration: max(0, e.Time), TTFB: max(0, e.Timings.Wait), Complete: true, Error: e.Meta.Error}, RequestHeaders: requestHeaders, ResponseHeaders: responseHeaders, RequestTrailers: e.Meta.RequestTrailers, ResponseTrailers: e.Meta.ResponseTrailers}}
 		st.requestBytes.Store(max(int64(len(req)), e.Request.BodySize))
 		st.responseBytes.Store(max(int64(len(res)), e.Response.Content.Size))
 		st.lost.Store(truncated)

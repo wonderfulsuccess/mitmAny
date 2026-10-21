@@ -375,7 +375,7 @@ func (a *App) harData() ([]byte, error) {
 		entry := map[string]any{"startedDateTime": time.UnixMilli(d.Started).UTC().Format(time.RFC3339Nano), "time": d.Duration, "request": request, "response": map[string]any{"status": d.Status, "statusText": http.StatusText(d.Status), "httpVersion": d.Protocol, "headers": headers(d.ResponseHeaders), "cookies": []any{}, "content": map[string]any{"size": d.ResponseSize, "mimeType": d.ContentType, "text": d.ResponseBody, "encoding": "base64"}, "redirectURL": d.ResponseHeaders.Get("Location"), "headersSize": -1, "bodySize": d.ResponseSize}, "cache": map[string]any{}, "timings": map[string]any{"send": 0, "wait": d.TTFB, "receive": max(0, d.Duration-d.TTFB)}, "_mitmAny": meta}
 		entries = append(entries, entry)
 	}
-	return json.MarshalIndent(map[string]any{"log": map[string]any{"version": "1.2", "creator": map[string]string{"name": "mitmAny", "version": "0.1.2"}, "entries": entries}}, "", "  ")
+	return json.MarshalIndent(map[string]any{"log": map[string]any{"version": "1.2", "creator": map[string]string{"name": "mitmAny", "version": "1.1.0"}, "entries": entries}}, "", "  ")
 }
 func (a *App) WindowAction(action string) {
 	switch action {
@@ -387,13 +387,18 @@ func (a *App) WindowAction(action string) {
 		wruntime.Quit(a.ctx)
 	}
 }
+
+// Restore phone routing before stopping its listener, and always attempt desktop
+// restoration independently so one failure cannot skip the other cleanup.
+func (a *App) prepareExit() error {
+	a.mu.Lock()
+	androidErr := a.stopAndroidLocked()
+	a.mu.Unlock()
+	_, desktopErr := a.StopCapture()
+	return errors.Join(androidErr, desktopErr)
+}
 func (a *App) beforeClose(ctx context.Context) bool {
-	_, err := a.StopCapture()
-	if err == nil {
-		a.mu.Lock()
-		err = a.stopAndroidLocked()
-		a.mu.Unlock()
-	}
+	err := a.prepareExit()
 	if err == nil {
 		return false
 	}
@@ -401,9 +406,8 @@ func (a *App) beforeClose(ctx context.Context) bool {
 	return true
 }
 func (a *App) shutdown(context.Context) {
-	_, _ = a.StopCapture()
+	_ = a.prepareExit()
 	a.mu.Lock()
-	_ = a.stopAndroidLocked()
 	engine := a.engine
 	a.engine = nil
 	listener := a.listener
