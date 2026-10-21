@@ -1,0 +1,29 @@
+{
+  "name": "mitmany-desktop",
+  "private": true,
+  "version": "0.1.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test:json": "node --experimental-strip-types --test tests/jsonDocument.test.mjs",
+    "test:curl": "node --experimental-strip-types --test tests/curl.test.mjs"
+  },
+  "dependencies": {
+    "@tanstack/react-virtual": "^3.14.21",
+    "lucide-react": "^1.59.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^5.6.3",
+    "vite": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

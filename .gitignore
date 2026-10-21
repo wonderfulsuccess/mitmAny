@@ -1,0 +1,57 @@
+# macOS / Windows metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Frontend dependencies and generated Wails files
+node_modules/
+/frontend/dist/
+/frontend/wailsjs/
+/frontend/package.json.md5
+*.tsbuildinfo
+
+# Compiled apps and release archives (keep build configuration and icons)
+/build/bin/
+/build/releases/
+*.test
+*.exe
+*.dll
+*.dylib
+*.so
+
+# Test, profiling and local browser artifacts
+/.playwright-cli/
+/output/
+/coverage/
+coverage.out
+coverage.html
+*.prof
+*.pprof
+*.log
+
+# Local environment and editor settings
+.env
+.env.*
+!.env.example
+!.env.*.example
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Captured traffic and runtime state may contain credentials
+*.har
+/android-proxies.json
+/proxy-backup.json
+/session.json
+/session.json.tmp
+
+# Local certificates and private keys; never ship the MITM CA private key
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
