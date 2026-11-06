@@ -1,5 +1,7 @@
-import type { AndroidDevice, AndroidState, AppState, Batch, Certificate, Detail } from "./types";
+import type { AndroidDevice, AndroidState, AppState, Batch, Certificate, CodexStatus, Detail } from "./types";
 type Native = {
+  GetCodexStatus(): Promise<CodexStatus>;
+  ConnectCodex(): Promise<CodexStatus>;
   GetAndroidState(): Promise<AndroidState>;
   AndroidDevices(): Promise<AndroidDevice[]>;
   SetAndroidEnabled(serial: string, enabled: boolean): Promise<AndroidState>;
@@ -47,6 +49,8 @@ const previewState: AppState = {
   dataDirectory: "Desktop application only",
 };
 const preview: Native = {
+  GetCodexStatus: async () => ({ skillInstalled: false, mcpRegistered: false, skillDisabled: false, ready: false, serviceRunning: false, lastActivity: 0, skillPath: "", configPath: "", error: "请在 mitmAny 桌面应用中连接 Codex。" }),
+  ConnectCodex: unavailable,
   GetAndroidState: async () => ({ enabled: false, serial: "", listening: false, address: "127.0.0.1:9081", pending: [] }),
   AndroidDevices: async () => [],
   SetAndroidEnabled: unavailable,

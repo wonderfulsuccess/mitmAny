@@ -2021,3 +2021,22 @@ body,
 .live-label { font: inherit; }
 .titlebar .live-badge.capture-warning { color: #b78532; border-color: #b7853266; }
 @media (max-width: 540px) { .response-title { max-width: 22vw; } .response-expanded .body-toolbar { gap: 5px; } }
+
+.codex-heading { padding-bottom: 12px; }
+.codex-heading > div { min-width: 0; }
+.codex-heading > button { flex-shrink: 0; }
+.codex-state { margin-bottom: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 11px; color: var(--muted); }
+.codex-status-line { display: flex; align-items: center; justify-content: space-between; }
+.codex-badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.codex-badge.ready { color: #258553; }
+.codex-refresh { display: inline-flex; align-items: center; padding: 4px; color: inherit; }
+.codex-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; }
+.codex-state p { margin: 8px 0 0; line-height: 1.65; overflow-wrap: anywhere; }
+.codex-state .codex-error { color: #d0544a; }
+.codex-state details { margin-top: 10px; }
+.codex-state summary { cursor: pointer; }
+.codex-state code { display: block; font-size: 10px; overflow-wrap: anywhere; }
+.codex-spinner { animation: codex-spin 1s linear infinite; }
+@keyframes codex-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .codex-spinner { animation: none; } }
+@media (max-width: 520px) { .codex-heading { flex-wrap: wrap; } .codex-heading > div { flex-basis: 100%; } }

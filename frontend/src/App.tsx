@@ -41,6 +41,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import CodexConnection from "./CodexConnection";
 import type { AndroidState, AppState, Certificate, Detail, Flow } from "./types";
 import { api, errorText, isDesktop, resourceType, size } from "./bridge";
 import { domainName, groupDomains, searchDomainGroups } from "./domainGroups";
@@ -1049,7 +1050,7 @@ function Settings({
         </button>
       </div>
       <h2>Make yourself at home.</h2>
-      <p className="settings-description">网络接管方式、CA 证书、界面与本地数据。</p>
+      <p className="settings-description">网络接管方式、Codex、CA 证书、界面与本地数据。</p>
       <div className="setting-row">
         <div>
           <strong>CA Certificate</strong>
@@ -1059,6 +1060,7 @@ function Settings({
           <ShieldCheck size={15} /> 管理证书
         </button>
       </div>
+      <CodexConnection />
       <label className="setting-row">
         <div>
           <strong>System proxy</strong>

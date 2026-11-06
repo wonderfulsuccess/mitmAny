@@ -23,6 +23,7 @@ import (
 	"github.com/lqqyt2423/go-mitmproxy/proxy"
 	log "github.com/sirupsen/logrus"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"mitmAny/internal/agent"
 	"mitmAny/internal/android"
 	"mitmAny/internal/capture"
 	"mitmAny/internal/certificates"
@@ -30,6 +31,7 @@ import (
 )
 
 type App struct {
+	agentServer    *agent.LocalServer
 	android        *android.Manager
 	mobileEngine   *proxy.Proxy
 	mobileListener net.Listener
@@ -100,6 +102,13 @@ func (a *App) startup(ctx context.Context) {
 		return
 	}
 	a.observer = capture.NewObserver(a.store)
+	service := agent.New(a.store, func() any {
+		return map[string]any{"desktop": a.GetState(), "android": a.GetAndroidState()}
+	}, a.observer.Dropped)
+	a.agentServer, err = agent.Listen(a.dir, service)
+	if err != nil {
+		a.lastError = "智能体查询服务启动失败: " + err.Error()
+	}
 }
 func (a *App) GetState() AppState { a.mu.Lock(); defer a.mu.Unlock(); return a.stateLocked() }
 func (a *App) stateLocked() AppState {
@@ -406,6 +415,9 @@ func (a *App) beforeClose(ctx context.Context) bool {
 	return true
 }
 func (a *App) shutdown(context.Context) {
+	if a.agentServer != nil {
+		a.agentServer.Close()
+	}
 	_ = a.prepareExit()
 	a.mu.Lock()
 	engine := a.engine

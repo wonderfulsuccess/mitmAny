@@ -76,3 +76,15 @@ export interface AndroidDevice {
   state: string;
   model: string;
 }
+
+export interface CodexStatus {
+  skillInstalled: boolean;
+  mcpRegistered: boolean;
+  skillDisabled: boolean;
+  ready: boolean;
+  serviceRunning: boolean;
+  lastActivity: number;
+  skillPath: string;
+  configPath: string;
+  error: string;
+}

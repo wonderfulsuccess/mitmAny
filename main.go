@@ -2,6 +2,9 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"mitmAny/internal/agent"
+	"os"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2"
@@ -16,6 +19,13 @@ import (
 var assets embed.FS
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--mcp" {
+		if err := agent.RunStdio(os.Args[2:], os.Stderr); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	app := NewApp()
 	err := wails.Run(&options.App{
 		Title: "mitmAny", Width: 1440, Height: 920, MinWidth: 480, MinHeight: 560,

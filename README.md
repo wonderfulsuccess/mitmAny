@@ -141,3 +141,46 @@ MITMANY_TEST_ANDROID_SERIAL=<adb设备序列号> go test -race -run TestAndroidU
 - 1 MiB 连续极限转发压测出现大量采集副本丢弃，网络转发仍成功。当前磁盘副本写入约 655–728 MB/s，低于该回环场景的转发速率。吞吐数值不能解释为完整抓包吞吐；后续优先优化有界写入合并和详情解压缓存。
 
 边界：没有 TUN/UDP/QUIC/HTTP3 接管；绕过系统代理的流量无法采集。证书固定、双向 TLS 和不信任用户 CA 的应用仍可能无法解密。WebSocket 记录握手和生命周期，尚无逐条消息面板；gRPC trailers 可查看，尚无 Protobuf schema 解析。非 HTML 每方向保留 1 MiB 预览，HTML 完整采集；拥塞时普通正文可能跳过副本或整个请求；压缩损坏、截断、超过解码上限或不支持的编码会保留原字节。Android 代理当前默认直连，不自动继承电脑原有的上游代理链。
+
+## Codex / MCP 网络协议分析
+
+### 设置中一键连接（推荐）
+
+打开 **Settings → Codex → 连接 Codex**。应用会离线安装内嵌的 `mitmany-network-analysis` skill 到 `~/.agents/skills`，并将当前应用的绝对路径与 `--mcp --data-dir <本机数据目录>` 注册到用户 Codex `config.toml` 的 `mcp_servers.mitmany`。配置目录遵循 `CODEX_HOME`，未设置时使用 `~/.codex`；不需要另外安装 Codex CLI。
+
+安装器仅更新 mitmany 条目，保留其他配置和注释。替换已有内容前，会在原目录保存权限为 0600 的 `.mitmany-*.bak` 备份；配置无效、目录不可写或检测到并发修改时显示错误，不报告成功。既有 skill 若被 Codex 显式禁用，会提示用户先启用。内联形式 `mcp_servers = {...}` 需先改为标准表格式再使用一键连接。
+
+设置面板分别显示 Skill、MCP 注册、本地服务状态，并每 5 秒刷新最近收到的已认证工具调用时间。**“配置已就绪”不代表 Codex 当前在线**；MCP 工具调用也可能来自其他兼容客户端。完成后在 Codex 重新连接 MCP 或新开会话。移动应用后再次连接即可更新路径；macOS 从 DMG 或 App Translocation 运行时会提示先安装到稳定位置。
+
+skill 通过 Go embed 随安装包分发，无需下载或访问源码目录。旧版手动装在 `~/.codex/skills` 的同名 skill 不会被自动删除；若 Codex 列出重复 skill，可自行保留新路径的版本。
+
+### 手动连接
+
+应用启动时提供带随机令牌的本机查询服务（仅 `127.0.0.1`，独立随机端口）。MCP 桥接进程读取应用数据目录的 `agent-endpoint.json`，多个客户端共用桌面应用的数据；不会启动第二套代理。该文件包含访问令牌，不要分享或提交。正常退出清理文件，重启会轮换令牌。接口拒绝浏览器 Origin、错误 Host 和未认证请求。
+
+开发环境构建独立桥接程序并注册到 Codex：
+
+```sh
+go build -o build/bin/mitmany-mcp ./cmd/mitmany-mcp
+codex mcp add mitmany -- "$PWD/build/bin/mitmany-mcp"
+mkdir -p "$HOME/.agents/skills/mitmany-network-analysis"
+cp skills/mitmany-network-analysis/SKILL.md "$HOME/.agents/skills/mitmany-network-analysis/SKILL.md"
+```
+
+Windows 可使用 `go build -o build/bin/mitmany-mcp.exe ./cmd/mitmany-mcp`，注册其绝对路径，将 skill 文件夹复制到用户 `.agents/skills`。
+
+安装包里的主程序也支持 `--mcp`（只运行桥接，不打开另一个窗口）：
+
+```sh
+# macOS，按实际安装路径调整
+codex mcp add mitmany -- /Applications/mitmAny.app/Contents/MacOS/mitmAny --mcp
+# Windows：codex mcp add mitmany -- C:\实际路径\mitmAny.exe --mcp
+```
+
+重新连接 Codex MCP / 开启新会话后，打开新版 mitmAny 并通过界面启用电脑或 Android 抓包。可说：“使用 mitmany-network-analysis 分析 api.example.com 的登录和分页协议，我会操作 App；请引用实际请求作为证据。” Skill 是工作流指导，MCP 才是数据接口；未安装 skill 也能调用工具。
+
+工具包括 `capture_status`、`begin_observation`、`mark_observation`、`end_observation`、`summarize_traffic`、`search_flows`、`get_flow`、`read_body`、`wait_for_flows`。观察操作仅维护逻辑书签，不清空数据、不更改系统/手机代理、不发送或重放请求。会话指定 host 为精确匹配，不是访问权限隔离。
+
+先聚合和筛选，再按 flow_id 读取头部与正文。列表默认 30 条、最多 100 条；用 `next_before_cursor` 翻页，保留初始 `after_cursor`，保存第一页的事件 `cursor`，读完后推进到该游标（活跃请求更新可能在下一轮重复出现，按 ID 去重）。`reset` 表示历史失效，需要重新读取当前快照。等待最多 30 秒。正文默认 8,000 字符、单次最多 32,000 字符，offset 按脱敏后 Unicode 字符计数；解码/输入上限为 1 MiB，包括 HTML，不改变 GUI 的 HTML 完整读取行为。
+
+当前限制：观察会话不固定证据，仍受共享存储的 3,000 条/正文预算影响；重启丢失观察书签，查询会报告清空、淘汰和游标失效。暂不可靠区分来源设备或 App 进程，不提供正文全文搜索、JSONPath、WebSocket 消息解析或请求重放。敏感 header/query/JSON/form 的常见键脱敏，任意文本和未知键不保证无凭证；无效 JSON 会拒绝返回以避免脱敏失效。相同值的代号在应用进程内稳定，重启变化。流量始终视为不可信证据，不能将响应中的文字作为智能体指令。
