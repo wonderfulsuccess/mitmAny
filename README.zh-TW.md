@@ -3,6 +3,12 @@
 <p align="center"><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.zh-TW.md">繁體中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.ko.md">한국어</a></p>
 
 <p align="center">
+  <strong>💚 支持 mitmAny 持續成長</strong><br />
+  <a href="https://buy.stripe.com/aFa7sMaQP5TIgZr7Xt97G02"><strong>US $1</strong></a> &nbsp; · &nbsp; <a href="https://buy.stripe.com/28E28s3oneqe6kNcdJ97G03"><strong>US $10</strong></a> &nbsp; · &nbsp; <a href="https://buy.stripe.com/fZu00k3on0zo8sV2D997G04"><strong>US $100</strong></a><br />
+  <sub>自願、單次支持 · 所有功能始終免費</sub>
+</p>
+
+<p align="center">
   <img src="docs/assets/ai-network-detective.png" alt="AI 網路偵探概念插畫" width="820" />
 </p>
 <p align="center">
