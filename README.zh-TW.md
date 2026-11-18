@@ -27,6 +27,12 @@ mitmAny 是一款**為 AI 輔助逆向分析打造的 HTTP / HTTPS 流量檢視�
 請先解壓縮，macOS 應用程式移至 Applications；Windows 需要 WebView2。本版未簽署，macOS 未經公證。[安裝與驗證（英文）](docs/installation.md)。
 
 
+## 軟體介面
+
+![以合成流量展示請求清單與 JSON 檢視器](docs/assets/workspace.png)
+
+*畫面使用合成資料，不含真實帳號資訊。[示範流程（英文）](docs/demo.md)*
+
 ## 從流量到 AI 輔助逆向分析
 
 ```mermaid
@@ -96,12 +102,3 @@ wails dev
 [Development](docs/development.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
 [MIT](LICENSE) · [Third-party licenses](THIRD_PARTY_NOTICES.md)
-
-<details>
-<summary>查看實際軟體介面</summary>
-
-![以合成流量展示請求清單與 JSON 檢視器](docs/assets/workspace.png)
-
-*畫面使用合成資料，不含真實帳號資訊。[示範流程（英文）](docs/demo.md)*
-
-</details>

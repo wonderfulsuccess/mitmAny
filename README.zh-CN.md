@@ -28,6 +28,12 @@ mitmAny 是一款**为 AI 辅助逆向打造的 HTTP / HTTPS 抓包工具**，�
 [SHA-256 校验文件](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt)。请先解压；macOS 应用移至 Applications，Windows 需要 WebView2。本次安装包未签名，macOS 未公证，可能出现系统安全提示。[安装与校验说明](docs/installation.md)
 
 
+## 软件界面
+
+![mitmAny 请求列表与 JSON 详情，展示合成示例数据](docs/assets/workspace.png)
+
+*截图使用合成流量，不包含真实账户或设备信息。[演示流程](docs/demo.md)*
+
 ## 从抓包到 AI 辅助逆向
 
 ```mermaid
@@ -125,12 +131,3 @@ wails dev
 ## 许可
 
 [MIT](LICENSE)。本地维护的 `go-mitmproxy` 分支保留其原许可证与补丁说明。[第三方声明](THIRD_PARTY_NOTICES.md)
-
-<details>
-<summary>看看实际软件界面</summary>
-
-![mitmAny 请求列表与 JSON 详情，展示合成示例数据](docs/assets/workspace.png)
-
-*截图使用合成流量，不包含真实账户或设备信息。[演示流程](docs/demo.md)*
-
-</details>

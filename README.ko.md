@@ -27,6 +27,12 @@ mitmAny는 **AI 기반 리버스 엔지니어링을 돕는 HTTP / HTTPS 트래�
 압축을 푼 후 실행하세요. macOS 앱은 Applications로 이동하고, Windows에는 WebView2가 필요합니다. 이 버전은 서명되지 않았으며 macOS 공증도 받지 않았습니다. [설치 및 검증(영문)](docs/installation.md).
 
 
+## 앱 화면
+
+![합성 데이터로 표시한 요청 목록과 JSON 뷰어](docs/assets/workspace.png)
+
+*실제 계정 정보가 없는 합성 데이터입니다. [데모 안내(영문)](docs/demo.md)*
+
 ## 실제 트래픽을 근거로 AI와 API 분석하기
 
 ```mermaid
@@ -96,12 +102,3 @@ wails dev
 [Development](docs/development.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
 [MIT](LICENSE) · [Third-party licenses](THIRD_PARTY_NOTICES.md)
-
-<details>
-<summary>실제 앱 화면 보기</summary>
-
-![합성 데이터로 표시한 요청 목록과 JSON 뷰어](docs/assets/workspace.png)
-
-*실제 계정 정보가 없는 합성 데이터입니다. [데모 안내(영문)](docs/demo.md)*
-
-</details>

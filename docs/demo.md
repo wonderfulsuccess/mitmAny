@@ -21,3 +21,5 @@ The empty first-capture state is available with `?empty=1`. All certificate, pro
 ## README artwork
 
 `assets/ai-network-detective.png` is an AI-generated concept illustration created for mitmAny. It represents AI-assisted traffic analysis, not an application screenshot or an embedded AI model. `assets/project-badges.svg` is project-authored vector artwork. Both are distributed under the project MIT license.
+
+The README application screenshot uses the actual dark theme in the synthetic browser fixture, with English UI, a selected JSON response and the v1.2.1 Support entry. It is not an AI-generated application mockup.
