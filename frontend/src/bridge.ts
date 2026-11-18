@@ -1,5 +1,7 @@
+import { tr, diagnostic } from "./i18n.ts";
 import type { AndroidDevice, AndroidState, AppState, Batch, Certificate, CodexStatus, Detail } from "./types";
 type Native = {
+  SetLanguage(language: string): Promise<void>;
   GetCodexStatus(): Promise<CodexStatus>;
   ConnectCodex(): Promise<CodexStatus>;
   GetAndroidState(): Promise<AndroidState>;
@@ -35,7 +37,7 @@ declare global {
 export const isDesktop = () => !!window.go?.main?.App;
 const unavailable = () =>
   Promise.reject(
-    new Error("请通过 Wails 桌面应用使用网络与证书功能。当前为界面预览。"),
+    new Error(tr("请通过 Wails 桌面应用使用网络与证书功能。当前为界面预览。")),
   );
 const previewState: AppState = {
   running: false,
@@ -49,7 +51,8 @@ const previewState: AppState = {
   dataDirectory: "Desktop application only",
 };
 const preview: Native = {
-  GetCodexStatus: async () => ({ skillInstalled: false, mcpRegistered: false, skillDisabled: false, ready: false, serviceRunning: false, lastActivity: 0, skillPath: "", configPath: "", error: "请在 mitmAny 桌面应用中连接 Codex。" }),
+  SetLanguage: async () => {},
+  GetCodexStatus: async () => ({ skillInstalled: false, mcpRegistered: false, skillDisabled: false, ready: false, serviceRunning: false, lastActivity: 0, skillPath: "", configPath: "", error: tr("请在 mitmAny 桌面应用中连接 Codex。") }),
   ConnectCodex: unavailable,
   GetAndroidState: async () => ({ enabled: false, serial: "", listening: false, address: "127.0.0.1:9081", pending: [] }),
   AndroidDevices: async () => [],
@@ -96,12 +99,13 @@ export const api = new Proxy({} as Native, {
     (_, key: keyof Native) =>
     (...args: never[]) => {
       const target = window.go?.main?.App ?? preview;
+      if (key === "SetLanguage" && typeof target[key] !== "function") return preview.SetLanguage(args[0]);
       return (target[key] as (...args: never[]) => unknown)(...args);
     },
 });
 export function openExternalURL(value: string) {
   const url = new URL(value);
-  if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("仅支持 HTTP/HTTPS 链接");
+  if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error(tr("仅支持 HTTP/HTTPS 链接"));
   const runtime = (window as Window & { runtime?: { BrowserOpenURL(url: string): void } }).runtime;
   if (runtime?.BrowserOpenURL) runtime.BrowserOpenURL(url.href);
   else window.open(url.href, "_blank", "noopener,noreferrer");
@@ -125,4 +129,4 @@ export function resourceType(content: string, url = "") {
   return c ? "Other" : "Pending";
 }
 export const errorText = (e: unknown) =>
-  e instanceof Error ? e.message : String(e);
+  diagnostic(e instanceof Error ? e.message : String(e));

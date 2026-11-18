@@ -1,0 +1,14 @@
+name: Feature request / 功能建议
+description: Describe the workflow and outcome you need.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and alternatives
+      description: Explain any impact on forwarding, storage, device settings or privacy.

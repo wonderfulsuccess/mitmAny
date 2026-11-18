@@ -1,0 +1,10 @@
+title = "mitmAny secret scanning"
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public RFC 6455 WebSocket handshake nonce in a synthetic protocol test"
+condition = "AND"
+paths = ['''internal/capture/audit_test\.go$''']
+regexTarget = "line"
+regexes = ['''Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==''']

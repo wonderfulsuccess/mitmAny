@@ -22,6 +22,7 @@ type Summary struct {
 	Complete     bool    `json:"complete"`
 	Error        string  `json:"error,omitempty"`
 	Truncated    bool    `json:"truncated"`
+	CaptureNote  string  `json:"captureNote,omitempty"`
 	Revision     uint64  `json:"revision"`
 }
 type Detail struct {

@@ -27,7 +27,9 @@ import (
 	"mitmAny/internal/android"
 	"mitmAny/internal/capture"
 	"mitmAny/internal/certificates"
+	"mitmAny/internal/i18n"
 	"mitmAny/internal/platform"
+	"mitmAny/internal/version"
 )
 
 type App struct {
@@ -110,6 +112,8 @@ func (a *App) startup(ctx context.Context) {
 		a.lastError = "智能体查询服务启动失败: " + err.Error()
 	}
 }
+func (a *App) SetLanguage(language string) error { return i18n.SetLocale(language) }
+
 func (a *App) GetState() AppState { a.mu.Lock(); defer a.mu.Unlock(); return a.stateLocked() }
 func (a *App) stateLocked() AppState {
 	s := AppState{Running: a.running, SystemProxy: a.systemEnabled, Recording: a.recording, Address: "127.0.0.1:9080", Platform: runtime.GOOS, Error: a.lastError, DataDirectory: a.dir}
@@ -300,7 +304,7 @@ func (a *App) ExportCertificate() error {
 	if a.certificates == nil {
 		return errors.New(a.initError)
 	}
-	path, err := wruntime.SaveFileDialog(a.ctx, wruntime.SaveDialogOptions{DefaultFilename: "mitmAny-ca.pem", Title: "导出 CA 公钥证书"})
+	path, err := wruntime.SaveFileDialog(a.ctx, wruntime.SaveDialogOptions{DefaultFilename: "mitmAny-ca.pem", Title: i18n.Text("导出 CA 公钥证书")})
 	if err != nil || path == "" {
 		return err
 	}
@@ -323,7 +327,7 @@ func (a *App) SaveBody(id string, request bool) error {
 	}
 	filename := bodyFilename(d.URL, headers, encoding, data, request)
 	ext := filepath.Ext(filename)
-	path, err := wruntime.SaveFileDialog(a.ctx, wruntime.SaveDialogOptions{DefaultFilename: filename, Title: "保存已捕获的正文", Filters: []wruntime.FileFilter{{DisplayName: "正文文件 (" + ext + ")", Pattern: "*" + ext}, {DisplayName: "所有文件", Pattern: "*"}}})
+	path, err := wruntime.SaveFileDialog(a.ctx, wruntime.SaveDialogOptions{DefaultFilename: filename, Title: i18n.Text("保存已捕获的正文"), Filters: []wruntime.FileFilter{{DisplayName: i18n.Text("正文文件 (") + ext + ")", Pattern: "*" + ext}, {DisplayName: i18n.Text("所有文件"), Pattern: "*"}}})
 	if err != nil || path == "" {
 		return err
 	}
@@ -333,7 +337,7 @@ func (a *App) ExportHAR() error {
 	if a.store == nil {
 		return errors.New(a.initError)
 	}
-	path, err := wruntime.SaveFileDialog(a.ctx, wruntime.SaveDialogOptions{DefaultFilename: "mitmAny-" + time.Now().Format("20060102-150405") + ".har", Title: "导出 HAR", Filters: []wruntime.FileFilter{{DisplayName: "HTTP Archive", Pattern: "*.har"}}})
+	path, err := wruntime.SaveFileDialog(a.ctx, wruntime.SaveDialogOptions{DefaultFilename: "mitmAny-" + time.Now().Format("20060102-150405") + ".har", Title: i18n.Text("导出 HAR"), Filters: []wruntime.FileFilter{{DisplayName: "HTTP Archive", Pattern: "*.har"}}})
 	if err != nil || path == "" {
 		return err
 	}
@@ -370,7 +374,7 @@ func (a *App) harData() ([]byte, error) {
 				}
 			}
 		}
-		meta := map[string]any{"truncated": d.Truncated, "error": d.Error, "requestEncoding": d.RequestEncoding, "responseEncoding": d.ResponseEncoding, "requestTrailers": d.RequestTrailers, "responseTrailers": d.ResponseTrailers}
+		meta := map[string]any{"truncated": d.Truncated, "captureNote": d.CaptureNote, "error": d.Error, "requestEncoding": d.RequestEncoding, "responseEncoding": d.ResponseEncoding, "requestTrailers": d.RequestTrailers, "responseTrailers": d.ResponseTrailers}
 		request := map[string]any{"method": d.Method, "url": d.URL, "httpVersion": d.Protocol, "headers": headers(d.RequestHeaders), "queryString": query, "cookies": []any{}, "headersSize": -1, "bodySize": d.RequestSize}
 		if d.RequestBody != "" {
 			body, _ := base64.StdEncoding.DecodeString(d.RequestBody)
@@ -384,7 +388,7 @@ func (a *App) harData() ([]byte, error) {
 		entry := map[string]any{"startedDateTime": time.UnixMilli(d.Started).UTC().Format(time.RFC3339Nano), "time": d.Duration, "request": request, "response": map[string]any{"status": d.Status, "statusText": http.StatusText(d.Status), "httpVersion": d.Protocol, "headers": headers(d.ResponseHeaders), "cookies": []any{}, "content": map[string]any{"size": d.ResponseSize, "mimeType": d.ContentType, "text": d.ResponseBody, "encoding": "base64"}, "redirectURL": d.ResponseHeaders.Get("Location"), "headersSize": -1, "bodySize": d.ResponseSize}, "cache": map[string]any{}, "timings": map[string]any{"send": 0, "wait": d.TTFB, "receive": max(0, d.Duration-d.TTFB)}, "_mitmAny": meta}
 		entries = append(entries, entry)
 	}
-	return json.MarshalIndent(map[string]any{"log": map[string]any{"version": "1.2", "creator": map[string]string{"name": "mitmAny", "version": "1.1.0"}, "entries": entries}}, "", "  ")
+	return json.MarshalIndent(map[string]any{"log": map[string]any{"version": "1.2", "creator": map[string]string{"name": "mitmAny", "version": version.Version}, "entries": entries}}, "", "  ")
 }
 func (a *App) WindowAction(action string) {
 	switch action {
@@ -411,7 +415,7 @@ func (a *App) beforeClose(ctx context.Context) bool {
 	if err == nil {
 		return false
 	}
-	_, _ = wruntime.MessageDialog(ctx, wruntime.MessageDialogOptions{Type: wruntime.ErrorDialog, Title: "网络配置尚未恢复", Message: "代理恢复失败，请连接手机并恢复手机代理，或点击恢复网络后重试。\n" + err.Error()})
+	_, _ = wruntime.MessageDialog(ctx, wruntime.MessageDialogOptions{Type: wruntime.ErrorDialog, Title: i18n.Text("网络配置尚未恢复"), Message: i18n.Text("代理恢复失败，请连接手机并恢复手机代理，或点击恢复网络后重试。\n") + i18n.Diagnostic(err.Error())})
 	return true
 }
 func (a *App) shutdown(context.Context) {
@@ -442,7 +446,7 @@ func (a *App) ImportHAR() (int, error) {
 	if a.store == nil {
 		return 0, errors.New(a.initError)
 	}
-	path, err := wruntime.OpenFileDialog(a.ctx, wruntime.OpenDialogOptions{Title: "导入 HTTP Archive", Filters: []wruntime.FileFilter{{DisplayName: "HTTP Archive", Pattern: "*.har;*.json"}}})
+	path, err := wruntime.OpenFileDialog(a.ctx, wruntime.OpenDialogOptions{Title: i18n.Text("导入 HTTP Archive"), Filters: []wruntime.FileFilter{{DisplayName: "HTTP Archive", Pattern: "*.har;*.json"}}})
 	if err != nil || path == "" {
 		return 0, err
 	}

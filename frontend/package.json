@@ -1,7 +1,7 @@
 {
   "name": "mitmany-desktop",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,8 @@
     "test:scroll": "node --experimental-strip-types --test tests/listScroll.test.mjs",
     "test:time": "node --experimental-strip-types --test tests/relativeTime.test.mjs",
     "test:sort": "node --experimental-strip-types --test tests/requestSort.test.mjs",
-    "test:search": "node --experimental-strip-types --test tests/bodySearch.test.mjs"
+    "test:search": "node --experimental-strip-types --test tests/bodySearch.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.14.21",

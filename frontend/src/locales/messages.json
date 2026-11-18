@@ -1,0 +1,1434 @@
+{
+  "正在检查手机连接…": {
+    "zh": "正在检查手机连接…",
+    "en": "Checking device connection…"
+  },
+  "正在连接手机并开启代理…": {
+    "zh": "正在连接手机并开启代理…",
+    "en": "Connecting the device and enabling its proxy…"
+  },
+  "正在恢复手机网络…": {
+    "zh": "正在恢复手机网络…",
+    "en": "Restoring device networking…"
+  },
+  "请连接原手机，关闭开关以恢复网络": {
+    "zh": "请连接原手机，关闭开关以恢复网络",
+    "en": "Reconnect the original device and turn off the switch to restore networking"
+  },
+  "已开启，手机流量将显示在请求列表": {
+    "zh": "已开启，手机流量将显示在请求列表",
+    "en": "Enabled; device traffic will appear in the request list"
+  },
+  "开启后自动配置手机并开始抓包": {
+    "zh": "开启后自动配置手机并开始抓包",
+    "en": "Enable to configure the device and start capture"
+  },
+  "关闭手机代理面板": {
+    "zh": "关闭手机代理面板",
+    "en": "Close Android proxy panel"
+  },
+  "Android 手机代理": {
+    "zh": "Android 手机代理",
+    "en": "Android proxy"
+  },
+  "连接手机，一键开始抓包。": {
+    "zh": "连接手机，一键开始抓包。",
+    "en": "Connect your device and start capturing."
+  },
+  "手机": {
+    "zh": "手机",
+    "en": "Device"
+  },
+  "选择手机": {
+    "zh": "选择手机",
+    "en": "Select a device"
+  },
+  "连接手机并允许 USB 调试": {
+    "zh": "连接手机并允许 USB 调试",
+    "en": "Connect a device and allow USB debugging"
+  },
+  "· 未连接": {
+    "zh": "· 未连接",
+    "en": "· Disconnected"
+  },
+  "已连接": {
+    "zh": "已连接",
+    "en": "Connected"
+  },
+  "等待 USB 调试授权": {
+    "zh": "等待 USB 调试授权",
+    "en": "Waiting for USB debugging authorization"
+  },
+  "未连接": {
+    "zh": "未连接",
+    "en": "Disconnected"
+  },
+  "手机代理": {
+    "zh": "手机代理",
+    "en": "Device proxy"
+  },
+  "关闭时自动恢复手机原有代理。断开 USB 前请先关闭。": {
+    "zh": "关闭时自动恢复手机原有代理。断开 USB 前请先关闭。",
+    "en": "Turning this off restores the original device proxy. Turn it off before unplugging USB."
+  },
+  "HTTPS 证书": {
+    "zh": "HTTPS 证书",
+    "en": "HTTPS certificate"
+  },
+  "首次使用时安装一次，并在手机上确认。": {
+    "zh": "首次使用时安装一次，并在手机上确认。",
+    "en": "Install once and confirm on your device."
+  },
+  "安装 CA 证书": {
+    "zh": "安装 CA 证书",
+    "en": "Install CA certificate"
+  },
+  "连接与证书帮助": {
+    "zh": "连接与证书帮助",
+    "en": "Connection and certificate help"
+  },
+  "开启手机开发者选项中的 USB 调试，并允许此电脑。设备列表会自动更新。部分手机还需开启「USB 调试（安全设置）」；电脑需安装 Android SDK Platform-Tools。": {
+    "zh": "开启手机开发者选项中的 USB 调试，并允许此电脑。设备列表会自动更新。部分手机还需开启「USB 调试（安全设置）」；电脑需安装 Android SDK Platform-Tools。",
+    "en": "Enable USB debugging in Developer options and authorize this computer. The device list updates automatically. Some devices also require “USB debugging (Security settings)”. Install Android SDK Platform-Tools on your computer."
+  },
+  "证书会复制到 Download/mitmAny-ca.crt，并打开手机安全设置。选择「安装证书 → CA 证书」和该文件完成安装。": {
+    "zh": "证书会复制到 Download/mitmAny-ca.crt，并打开手机安全设置。选择「安装证书 → CA 证书」和该文件完成安装。",
+    "en": "The certificate is copied to Download/mitmAny-ca.crt and device security settings open. Choose Install certificate → CA certificate and select that file."
+  },
+  "仅支持遵循系统代理、信任用户 CA 的应用。部分应用需要调试配置，证书固定和 QUIC 流量可能无法解密。": {
+    "zh": "仅支持遵循系统代理、信任用户 CA 的应用。部分应用需要调试配置，证书固定和 QUIC 流量可能无法解密。",
+    "en": "Only apps that honor the system proxy and trust user CAs are supported. Some apps need debug configuration; certificate pinning and QUIC traffic may prevent decryption."
+  },
+  "状态码": {
+    "zh": "状态码",
+    "en": "Status code"
+  },
+  "请求方法": {
+    "zh": "请求方法",
+    "en": "Request method"
+  },
+  "请求路径与域名": {
+    "zh": "请求路径与域名",
+    "en": "Request path and host"
+  },
+  "资源类型": {
+    "zh": "资源类型",
+    "en": "Resource type"
+  },
+  "响应大小": {
+    "zh": "响应大小",
+    "en": "Response size"
+  },
+  "距今": {
+    "zh": "距今",
+    "en": "Age"
+  },
+  "请求发生时间，逆序为最新在前": {
+    "zh": "请求发生时间，逆序为最新在前",
+    "en": "Request time; descending puts newest first"
+  },
+  "请求耗时": {
+    "zh": "请求耗时",
+    "en": "Request duration"
+  },
+  "瀑布图总耗时": {
+    "zh": "瀑布图总耗时",
+    "en": "Total waterfall duration"
+  },
+  "关闭窗口": {
+    "zh": "关闭窗口",
+    "en": "Close window"
+  },
+  "最小化窗口": {
+    "zh": "最小化窗口",
+    "en": "Minimize window"
+  },
+  "最大化窗口": {
+    "zh": "最大化窗口",
+    "en": "Maximize window"
+  },
+  "显示侧边栏": {
+    "zh": "显示侧边栏",
+    "en": "Show sidebar"
+  },
+  "隐藏侧边栏": {
+    "zh": "隐藏侧边栏",
+    "en": "Hide sidebar"
+  },
+  "显示": {
+    "zh": "显示",
+    "en": "Show"
+  },
+  "隐藏": {
+    "zh": "隐藏",
+    "en": "Hide"
+  },
+  "Android 采集中": {
+    "zh": "Android 采集中",
+    "en": "Capturing Android traffic"
+  },
+  "正在采集": {
+    "zh": "正在采集",
+    "en": "Capturing"
+  },
+  "采集记录已暂停": {
+    "zh": "采集记录已暂停",
+    "en": "Recording paused"
+  },
+  "采集已停止": {
+    "zh": "采集已停止",
+    "en": "Capture stopped"
+  },
+  "无采集事件丢失": {
+    "zh": "无采集事件丢失",
+    "en": "No capture events dropped"
+  },
+  "流量工具": {
+    "zh": "流量工具",
+    "en": "Traffic tools"
+  },
+  "Android 手机代理已开启": {
+    "zh": "Android 手机代理已开启",
+    "en": "Android proxy enabled"
+  },
+  "Android 手机代理 · 有待恢复设备": {
+    "zh": "Android 手机代理 · 有待恢复设备",
+    "en": "Android proxy · Devices need recovery"
+  },
+  "Android 手机代理与 CA 安装": {
+    "zh": "Android 手机代理与 CA 安装",
+    "en": "Android proxy and CA installation"
+  },
+  "恢复电脑网络": {
+    "zh": "恢复电脑网络",
+    "en": "Recover desktop network"
+  },
+  "恢复抓包前的电脑系统代理": {
+    "zh": "恢复抓包前的电脑系统代理",
+    "en": "Restore the desktop proxy saved before capture"
+  },
+  "电脑系统代理已恢复；手机代理请在 Android 面板恢复": {
+    "zh": "电脑系统代理已恢复；手机代理请在 Android 面板恢复",
+    "en": "Desktop proxy restored; restore device proxies in the Android panel"
+  },
+  "导入 HAR 会话": {
+    "zh": "导入 HAR 会话",
+    "en": "Import a HAR session"
+  },
+  "导入 HAR": {
+    "zh": "导入 HAR",
+    "en": "Import HAR"
+  },
+  "导出已捕获的数据为 HAR": {
+    "zh": "导出已捕获的数据为 HAR",
+    "en": "Export captured traffic as HAR"
+  },
+  "导出 HAR": {
+    "zh": "导出 HAR",
+    "en": "Export HAR"
+  },
+  "正在连接代理": {
+    "zh": "正在连接代理",
+    "en": "Connecting proxy"
+  },
+  "停止抓包": {
+    "zh": "停止抓包",
+    "en": "Stop capture"
+  },
+  "开始抓包": {
+    "zh": "开始抓包",
+    "en": "Start capture"
+  },
+  "正在连接代理…": {
+    "zh": "正在连接代理…",
+    "en": "Connecting proxy…"
+  },
+  "Settings · 设置": {
+    "zh": "Settings · 设置",
+    "en": "Settings"
+  },
+  "设置": {
+    "zh": "设置",
+    "en": "Settings"
+  },
+  "关闭侧边栏": {
+    "zh": "关闭侧边栏",
+    "en": "Close sidebar"
+  },
+  "主域名分组": {
+    "zh": "主域名分组",
+    "en": "Group by root domain"
+  },
+  "子域名平铺": {
+    "zh": "子域名平铺",
+    "en": "Flat host list"
+  },
+  "切换为所有域名平铺": {
+    "zh": "切换为所有域名平铺",
+    "en": "Switch to a flat host list"
+  },
+  "切换为主域名分组": {
+    "zh": "切换为主域名分组",
+    "en": "Group by root domain"
+  },
+  "分组": {
+    "zh": "分组",
+    "en": "Grouped"
+  },
+  "平铺": {
+    "zh": "平铺",
+    "en": "Flat"
+  },
+  "搜索域名": {
+    "zh": "搜索域名",
+    "en": "Search hosts"
+  },
+  "搜索域名…": {
+    "zh": "搜索域名…",
+    "en": "Search hosts…"
+  },
+  "清空域名搜索": {
+    "zh": "清空域名搜索",
+    "en": "Clear host search"
+  },
+  "收起": {
+    "zh": "收起",
+    "en": "Collapse"
+  },
+  "展开": {
+    "zh": "展开",
+    "en": "Expand"
+  },
+  "筛选此域名的请求": {
+    "zh": "筛选此域名的请求",
+    "en": "Filter requests from this host"
+  },
+  "没有匹配的域名": {
+    "zh": "没有匹配的域名",
+    "en": "No matching hosts"
+  },
+  "发现未恢复的系统代理配置": {
+    "zh": "发现未恢复的系统代理配置",
+    "en": "Unrestored system proxy settings found"
+  },
+  "恢复网络": {
+    "zh": "恢复网络",
+    "en": "Recover network"
+  },
+  "搜索请求": {
+    "zh": "搜索请求",
+    "en": "Search requests"
+  },
+  "清空搜索": {
+    "zh": "清空搜索",
+    "en": "Clear search"
+  },
+  "流量列表滚动模式": {
+    "zh": "流量列表滚动模式",
+    "en": "Request list scrolling"
+  },
+  "触底：始终跟随最新请求": {
+    "zh": "触底：始终跟随最新请求",
+    "en": "Follow the newest requests"
+  },
+  "触底": {
+    "zh": "触底",
+    "en": "Follow"
+  },
+  "定住：保持当前阅读位置，手动滚动": {
+    "zh": "定住：保持当前阅读位置，手动滚动",
+    "en": "Keep your reading position; scroll manually"
+  },
+  "定住": {
+    "zh": "定住",
+    "en": "Hold"
+  },
+  "暂停记录新请求": {
+    "zh": "暂停记录新请求",
+    "en": "Pause new request recording"
+  },
+  "继续记录请求": {
+    "zh": "继续记录请求",
+    "en": "Resume request recording"
+  },
+  "暂停记录（保持代理转发）": {
+    "zh": "暂停记录（保持代理转发）",
+    "en": "Pause recording (keep forwarding)"
+  },
+  "继续记录": {
+    "zh": "继续记录",
+    "en": "Resume recording"
+  },
+  "清空会话": {
+    "zh": "清空会话",
+    "en": "Clear session"
+  },
+  "清空本地会话": {
+    "zh": "清空本地会话",
+    "en": "Clear the local session"
+  },
+  "捕获的网络请求": {
+    "zh": "捕获的网络请求",
+    "en": "Captured network requests"
+  },
+  "逆序": {
+    "zh": "逆序",
+    "en": "Descending"
+  },
+  "正序": {
+    "zh": "正序",
+    "en": "Ascending"
+  },
+  "已收藏": {
+    "zh": "已收藏",
+    "en": "Starred"
+  },
+  "调整筛选条件，找到你关心的请求。": {
+    "zh": "调整筛选条件，找到你关心的请求。",
+    "en": "Adjust the filters to find the requests you need."
+  },
+  "在浏览器或应用中发起请求，流量将在这里实时出现。": {
+    "zh": "在浏览器或应用中发起请求，流量将在这里实时出现。",
+    "en": "Make a request in your browser or app to see traffic here."
+  },
+  "Capture, inspect, and understand your traffic. 从一个请求开始，看清网络的每一个细节。": {
+    "zh": "捕获、查看并理解网络流量。从一个请求开始，看清每一个细节。",
+    "en": "Capture, inspect, and understand your traffic. Start with one request and explore every detail."
+  },
+  "首次抓包指引": {
+    "zh": "首次抓包指引",
+    "en": "First capture guide"
+  },
+  "1 · HTTPS 证书": {
+    "zh": "1 · HTTPS 证书",
+    "en": "1 · HTTPS certificate"
+  },
+  "已信任，可以查看 HTTPS 正文": {
+    "zh": "已信任，可以查看 HTTPS 正文",
+    "en": "Trusted; HTTPS bodies can be inspected"
+  },
+  "尚未信任，HTTPS 将仅透传": {
+    "zh": "尚未信任，HTTPS 将仅透传",
+    "en": "Not trusted; HTTPS will only be tunneled"
+  },
+  "正在检查证书…": {
+    "zh": "正在检查证书…",
+    "en": "Checking certificate…"
+  },
+  "管理证书": {
+    "zh": "管理证书",
+    "en": "Manage certificate"
+  },
+  "2 · 选择流量来源": {
+    "zh": "2 · 选择流量来源",
+    "en": "2 · Choose a traffic source"
+  },
+  "电脑系统代理已开启": {
+    "zh": "电脑系统代理已开启",
+    "en": "Desktop system proxy enabled"
+  },
+  "手动代理模式": {
+    "zh": "手动代理模式",
+    "en": "Manual proxy mode"
+  },
+  "开始后启用电脑系统代理": {
+    "zh": "开始后启用电脑系统代理",
+    "en": "Starting capture will enable the desktop system proxy"
+  },
+  "开始后需手动配置代理": {
+    "zh": "开始后需手动配置代理",
+    "en": "Configure your client proxy after starting capture"
+  },
+  "Android 手机": {
+    "zh": "Android 手机",
+    "en": "Android device"
+  },
+  "3 · 发起请求": {
+    "zh": "3 · 发起请求",
+    "en": "3 · Make a request"
+  },
+  "访问网页或操作应用，再选择请求查看详情。": {
+    "zh": "访问网页或操作应用，再选择请求查看详情。",
+    "en": "Use a website or app, then select a request to inspect it."
+  },
+  "Browser preview · 网络功能请在桌面应用中使用": {
+    "zh": "Browser preview · 网络功能请在桌面应用中使用",
+    "en": "Browser preview · Use the desktop app for network features"
+  },
+  "调整列表和详情的高度": {
+    "zh": "调整列表和详情的高度",
+    "en": "Adjust list and inspector height"
+  },
+  "调整详情面板宽度": {
+    "zh": "调整详情面板宽度",
+    "en": "Adjust inspector width"
+  },
+  "关闭提示": {
+    "zh": "关闭提示",
+    "en": "Dismiss notification"
+  },
+  "关闭设置": {
+    "zh": "关闭设置",
+    "en": "Close settings"
+  },
+  "网络接管方式、Codex、CA 证书、界面与本地数据。": {
+    "zh": "网络接管方式、Codex、CA 证书、界面与本地数据。",
+    "en": "Proxy routing, Codex, CA certificates, appearance and local data."
+  },
+  "当前 CA 已信任，可用于 HTTPS 抓包": {
+    "zh": "当前 CA 已信任，可用于 HTTPS 抓包",
+    "en": "The CA is trusted and ready for HTTPS capture"
+  },
+  "当前 CA 尚未信任": {
+    "zh": "当前 CA 尚未信任",
+    "en": "The CA is not trusted yet"
+  },
+  "配置 HTTPS 抓包所需的 CA 证书": {
+    "zh": "配置 HTTPS 抓包所需的 CA 证书",
+    "en": "Configure the CA required for HTTPS inspection"
+  },
+  "开启抓包时接管遵循系统代理的应用": {
+    "zh": "开启抓包时接管遵循系统代理的应用",
+    "en": "Capture apps that honor the system proxy"
+  },
+  "关闭后使用手动代理：": {
+    "zh": "关闭后使用手动代理：",
+    "en": "When disabled, configure your proxy manually:"
+  },
+  "。忽略系统代理的应用、非 HTTP 协议及证书固定暂不支持。系统模式会自动串联原有 HTTP/HTTPS 代理。": {
+    "zh": "。忽略系统代理的应用、非 HTTP 协议及证书固定暂不支持。系统模式会自动串联原有 HTTP/HTTPS 代理。",
+    "en": ". Apps that ignore the proxy, non-HTTP traffic and certificate pinning are not supported. System mode chains the original HTTP/HTTPS proxy."
+  },
+  "为深夜调试准备的深色界面": {
+    "zh": "为深夜调试准备的深色界面",
+    "en": "A darker workspace for late-night debugging"
+  },
+  "请求 / 普通响应 1 MiB · HTML 响应 8 MiB · 3,000 条 · 正文 256 MiB": {
+    "zh": "请求 / 普通响应 1 MiB · HTML 响应 8 MiB · 3,000 条 · 正文 256 MiB",
+    "en": "Request / ordinary response: 1 MiB · HTML response: 8 MiB · 3,000 requests · 256 MiB of bodies"
+  },
+  "所有正文计入磁盘预算，解压也有上限。队列繁忙时停止保存当前正文，网络继续转发；旧请求自动淘汰。HAR 和正文导出均受预览上限约束。SSE 持续采集正文前缀，WebSocket 首版仅透传。": {
+    "zh": "所有正文计入磁盘预算，解压也有上限。队列繁忙时停止保存当前正文，网络继续转发；旧请求自动淘汰。HAR 和正文导出均受预览上限约束。SSE 持续采集正文前缀，WebSocket 首版仅透传。",
+    "en": "All bodies count toward the disk budget; decompression is also bounded. Busy queues stop saving the current body while forwarding continues. Old requests are evicted. HAR and body exports retain only the captured prefix. SSE captures a prefix; WebSocket messages are forwarded without inspection."
+  },
+  "恢复启动抓包前保存的系统代理配置": {
+    "zh": "恢复启动抓包前保存的系统代理配置",
+    "en": "Restore the system proxy settings saved before capture"
+  },
+  "系统代理配置已恢复": {
+    "zh": "系统代理配置已恢复",
+    "en": "System proxy settings restored"
+  },
+  "流量保存在本机。HAR、cURL 和正文可能包含 Cookie、令牌和个人信息，分享前请检查并脱敏。 连接 AI 客户端后，工具返回的内容可能发送至模型服务；常见字段脱敏不保证所有正文安全。": {
+    "zh": "流量保存在本机。HAR、cURL 和正文可能包含 Cookie、令牌和个人信息，分享前请检查并脱敏。 连接 AI 客户端后，工具返回的内容可能发送至模型服务；常见字段脱敏不保证所有正文安全。",
+    "en": "Traffic stays on this computer. HAR, cURL and bodies can contain cookies, tokens and personal information; review and redact before sharing. Connected AI clients may send tool results to model services. Common-field redaction cannot cover every secret."
+  },
+  "关闭证书管理": {
+    "zh": "关闭证书管理",
+    "en": "Close certificate manager"
+  },
+  "安装本机专属的 CA 证书，以查看加密请求。": {
+    "zh": "安装本机专属的 CA 证书，以查看加密请求。",
+    "en": "Install your local CA certificate to inspect encrypted requests."
+  },
+  "私钥始终保存在你的设备上。": {
+    "zh": "私钥始终保存在你的设备上。",
+    "en": "The private key stays on your device."
+  },
+  "已通过系统证书信任检查": {
+    "zh": "已通过系统证书信任检查",
+    "en": "System trust verification passed"
+  },
+  "系统会显示证书授权提示": {
+    "zh": "系统会显示证书授权提示",
+    "en": "Your system will request permission to trust the certificate"
+  },
+  "重新检查": {
+    "zh": "重新检查",
+    "en": "Check again"
+  },
+  "重新检查证书": {
+    "zh": "重新检查证书",
+    "en": "Recheck certificate"
+  },
+  "请先停止抓包，再安装或卸载证书。": {
+    "zh": "请先停止抓包，再安装或卸载证书。",
+    "en": "Stop capture before installing or removing the certificate."
+  },
+  "等待系统授权…": {
+    "zh": "等待系统授权…",
+    "en": "Waiting for system authorization…"
+  },
+  "重新安装 CA 证书": {
+    "zh": "重新安装 CA 证书",
+    "en": "Reinstall CA certificate"
+  },
+  "安装并信任 CA 证书": {
+    "zh": "安装并信任 CA 证书",
+    "en": "Install and trust CA certificate"
+  },
+  "打开钥匙串": {
+    "zh": "打开钥匙串",
+    "en": "Open Keychain Access"
+  },
+  "如系统授权仍不可用：导入本机 CA 后，在钥匙串中双击“mitmAny Local CA”，展开“信任”，将“使用此证书时”设为“始终信任”，完成系统授权后点击“重新检查”。": {
+    "zh": "如系统授权仍不可用：导入本机 CA 后，在钥匙串中双击“mitmAny Local CA”，展开“信任”，将“使用此证书时”设为“始终信任”，完成系统授权后点击“重新检查”。",
+    "en": "If system authorization is unavailable, import the local CA, double-click “mitmAny Local CA” in Keychain Access, expand Trust and set “When using this certificate” to “Always Trust”. Complete authorization, then check again."
+  },
+  "导出公钥证书": {
+    "zh": "导出公钥证书",
+    "en": "Export public certificate"
+  },
+  "卸载证书": {
+    "zh": "卸载证书",
+    "en": "Uninstall certificate"
+  },
+  "仅用于本机调试 · Firefox 等应用可能需要独立导入证书": {
+    "zh": "仅用于本机调试 · Firefox 等应用可能需要独立导入证书",
+    "en": "For local debugging only · Apps such as Firefox may need a separate certificate import"
+  },
+  "正在检查": {
+    "zh": "正在检查",
+    "en": "Checking"
+  },
+  "配置已就绪": {
+    "zh": "配置已就绪",
+    "en": "Configuration ready"
+  },
+  "尚未就绪": {
+    "zh": "尚未就绪",
+    "en": "Not ready"
+  },
+  "Codex 连接": {
+    "zh": "Codex 连接",
+    "en": "Codex connection"
+  },
+  "一键安装分析 skill，让 Codex 读取流量并分析网络协议。": {
+    "zh": "一键安装分析 skill，让 Codex 读取流量并分析网络协议。",
+    "en": "Install the analysis skill so Codex can read traffic and analyze protocols."
+  },
+  "正在连接…": {
+    "zh": "正在连接…",
+    "en": "Connecting…"
+  },
+  "重新连接": {
+    "zh": "重新连接",
+    "en": "Reconnect"
+  },
+  "连接 Codex": {
+    "zh": "连接 Codex",
+    "en": "Connect Codex"
+  },
+  "连接后 AI 客户端可读取抓包数据，并可能将其发送至模型服务。仅分析已获授权的流量；常见字段脱敏不能覆盖所有敏感正文。": {
+    "zh": "连接后 AI 客户端可读取抓包数据，并可能将其发送至模型服务。仅分析已获授权的流量；常见字段脱敏不能覆盖所有敏感正文。",
+    "en": "Connected AI clients can read captured traffic and may send it to model services. Analyze only authorized traffic; common-field redaction cannot cover every secret."
+  },
+  "检查 Codex 连接状态": {
+    "zh": "检查 Codex 连接状态",
+    "en": "Check Codex connection"
+  },
+  "检查状态": {
+    "zh": "检查状态",
+    "en": "Check status"
+  },
+  "Skill：": {
+    "zh": "Skill：",
+    "en": "Skill:"
+  },
+  "已安装 · 已禁用": {
+    "zh": "已安装 · 已禁用",
+    "en": "Installed · Disabled"
+  },
+  "已安装": {
+    "zh": "已安装",
+    "en": "Installed"
+  },
+  "待安装": {
+    "zh": "待安装",
+    "en": "Not installed"
+  },
+  "MCP：": {
+    "zh": "MCP：",
+    "en": "MCP:"
+  },
+  "已注册": {
+    "zh": "已注册",
+    "en": "Registered"
+  },
+  "待注册 / 更新": {
+    "zh": "待注册 / 更新",
+    "en": "Register / update needed"
+  },
+  "本地服务：": {
+    "zh": "本地服务：",
+    "en": "Local service:"
+  },
+  "运行中": {
+    "zh": "运行中",
+    "en": "Running"
+  },
+  "不可用": {
+    "zh": "不可用",
+    "en": "Unavailable"
+  },
+  "最近工具调用：": {
+    "zh": "最近工具调用：",
+    "en": "Last tool call:"
+  },
+  "尚未收到工具调用。": {
+    "zh": "尚未收到工具调用。",
+    "en": "No tool calls received yet."
+  },
+  "在 Codex 中重新连接 MCP 或新开会话，然后说：“使用 mitmany-network-analysis 分析这个 App 的请求”。": {
+    "zh": "在 Codex 中重新连接 MCP 或新开会话，然后说：“使用 mitmany-network-analysis 分析这个 App 的请求”。",
+    "en": "Reconnect MCP or start a new Codex chat, then ask: “Use mitmany-network-analysis to analyze this app’s requests.”"
+  },
+  "连接会安装随应用附带的 skill，并注册当前 mitmAny；无需单独安装 Codex CLI。": {
+    "zh": "连接会安装随应用附带的 skill，并注册当前 mitmAny；无需单独安装 Codex CLI。",
+    "en": "Connect installs the bundled skill and registers this app; a separate Codex CLI installation is not required."
+  },
+  "配置就绪不代表 Codex 当前在线。开始分析前，请先开启电脑或 Android 抓包。": {
+    "zh": "配置就绪不代表 Codex 当前在线。开始分析前，请先开启电脑或 Android 抓包。",
+    "en": "Ready configuration does not mean Codex is online. Start desktop or Android capture before analysis."
+  },
+  "安装位置": {
+    "zh": "安装位置",
+    "en": "Installation locations"
+  },
+  "移动应用后请重新连接。替换已有文件前会在原目录保存备份。": {
+    "zh": "移动应用后请重新连接。替换已有文件前会在原目录保存备份。",
+    "en": "Reconnect after moving the app. Existing files are backed up before replacement."
+  },
+  "正文副本不可用": {
+    "zh": "正文副本不可用",
+    "en": "Captured body unavailable"
+  },
+  "等待正文…": {
+    "zh": "等待正文…",
+    "en": "Waiting for body…"
+  },
+  "此请求没有正文": {
+    "zh": "此请求没有正文",
+    "en": "This request has no body"
+  },
+  "此响应没有正文": {
+    "zh": "此响应没有正文",
+    "en": "This response has no body"
+  },
+  "已检测到正文传输，但未保存到正文副本，可能因采集繁忙或存储失败而缺失。": {
+    "zh": "已检测到正文传输，但未保存到正文副本，可能因采集繁忙或存储失败而缺失。",
+    "en": "Body transfer was detected, but no copy was saved. Capture pressure or a storage failure may be responsible."
+  },
+  "收到数据后会自动显示。": {
+    "zh": "收到数据后会自动显示。",
+    "en": "The body will appear as data arrives."
+  },
+  "URL 参数显示在上方；只有实际发送了 Body 的请求才会在这里显示正文。": {
+    "zh": "URL 参数显示在上方；只有实际发送了 Body 的请求才会在这里显示正文。",
+    "en": "URL parameters appear above. Only requests that actually send a body have content here."
+  },
+  "此类响应不包含正文。": {
+    "zh": "此类响应不包含正文。",
+    "en": "This type of response does not contain a body."
+  },
+  "服务器未返回正文。": {
+    "zh": "服务器未返回正文。",
+    "en": "The server did not return a body."
+  },
+  "Response 大屏浏览": {
+    "zh": "Response 大屏浏览",
+    "en": "Expanded response viewer"
+  },
+  "复制正文": {
+    "zh": "复制正文",
+    "en": "Copy body"
+  },
+  "正文已复制": {
+    "zh": "正文已复制",
+    "en": "Body copied"
+  },
+  "无法访问剪贴板": {
+    "zh": "无法访问剪贴板",
+    "en": "Cannot access the clipboard"
+  },
+  "下载正文（自动选择文件格式）": {
+    "zh": "下载正文（自动选择文件格式）",
+    "en": "Save body (choose format automatically)"
+  },
+  "退出大屏浏览（Esc）": {
+    "zh": "退出大屏浏览（Esc）",
+    "en": "Exit expanded view (Esc)"
+  },
+  "大屏浏览 Response": {
+    "zh": "大屏浏览 Response",
+    "en": "Expand response viewer"
+  },
+  "退出大屏浏览": {
+    "zh": "退出大屏浏览",
+    "en": "Exit expanded view"
+  },
+  "搜索响应正文": {
+    "zh": "搜索响应正文",
+    "en": "Search response body"
+  },
+  "搜索 Response…": {
+    "zh": "搜索 Response…",
+    "en": "Search response…"
+  },
+  "搜索中…": {
+    "zh": "搜索中…",
+    "en": "Searching…"
+  },
+  "上一个匹配": {
+    "zh": "上一个匹配",
+    "en": "Previous match"
+  },
+  "上一个（Shift+Enter）": {
+    "zh": "上一个（Shift+Enter）",
+    "en": "Previous match (Shift+Enter)"
+  },
+  "下一个匹配": {
+    "zh": "下一个匹配",
+    "en": "Next match"
+  },
+  "下一个（Enter）": {
+    "zh": "下一个（Enter）",
+    "en": "Next match (Enter)"
+  },
+  "清除搜索": {
+    "zh": "清除搜索",
+    "en": "Clear body search"
+  },
+  "压缩正文不完整、解压后超过 8 MiB 或编码暂不支持，可保存已捕获的原始字节。": {
+    "zh": "压缩正文不完整、解压后超过 8 MiB 或编码暂不支持，可保存已捕获的原始字节。",
+    "en": "The compressed body is incomplete, expands beyond 8 MiB, or uses an unsupported encoding. You can save the captured raw bytes."
+  },
+  "压缩正文不完整、解压后超过 1 MiB 或编码暂不支持，可保存已捕获的原始字节。": {
+    "zh": "压缩正文不完整、解压后超过 1 MiB 或编码暂不支持，可保存已捕获的原始字节。",
+    "en": "The compressed body is incomplete, expands beyond 1 MiB, or uses an unsupported encoding. You can save the captured raw bytes."
+  },
+  "图片副本不完整或格式不受支持，可保存已捕获的字节。": {
+    "zh": "图片副本不完整或格式不受支持，可保存已捕获的字节。",
+    "en": "The image copy is incomplete or unsupported. You can save the captured bytes."
+  },
+  "保存正文": {
+    "zh": "保存正文",
+    "en": "Save body"
+  },
+  "URL 参数": {
+    "zh": "URL 参数",
+    "en": "URL parameters"
+  },
+  "（空值）": {
+    "zh": "（空值）",
+    "en": "(empty)"
+  },
+  "此 URL 没有查询参数。": {
+    "zh": "此 URL 没有查询参数。",
+    "en": "This URL has no query parameters."
+  },
+  "选择一条请求，查看每一个细节。": {
+    "zh": "选择一条请求，查看每一个细节。",
+    "en": "Select a request to inspect every detail."
+  },
+  "浏览请求": {
+    "zh": "浏览请求",
+    "en": "Browse requests"
+  },
+  "返回请求列表": {
+    "zh": "返回请求列表",
+    "en": "Back to request list"
+  },
+  "关闭详情": {
+    "zh": "关闭详情",
+    "en": "Close inspector"
+  },
+  "返回列表": {
+    "zh": "返回列表",
+    "en": "Back to list"
+  },
+  "复制 URL": {
+    "zh": "复制 URL",
+    "en": "Copy URL"
+  },
+  "此连接仅通过 HTTPS 隧道转发，未解密内部请求或正文。请检查 CA 信任与 HTTPS 抓包设置。": {
+    "zh": "此连接仅通过 HTTPS 隧道转发，未解密内部请求或正文。请检查 CA 信任与 HTTPS 抓包设置。",
+    "en": "This connection is an HTTPS tunnel; its inner requests and bodies were not decrypted. Check CA trust and HTTPS capture settings."
+  },
+  "正文副本不完整：": {
+    "zh": "正文副本不完整：",
+    "en": "The body copy is incomplete:"
+  },
+  "采集达到上限、队列繁忙或存储失败": {
+    "zh": "采集达到上限、队列繁忙或存储失败",
+    "en": "Capture limit, queue pressure or storage failure"
+  },
+  "。请求与普通响应最多 1 MiB，HTML 响应最多 8 MiB；网络转发继续。": {
+    "zh": "。请求与普通响应最多 1 MiB，HTML 响应最多 8 MiB；网络转发继续。",
+    "en": ". Request and ordinary response bodies are capped at 1 MiB; HTML responses at 8 MiB. Forwarding continues."
+  },
+  "从代理接收请求头开始计算。": {
+    "zh": "从代理接收请求头开始计算。",
+    "en": "Measured from when the proxy receives the request headers."
+  },
+  "DNS、TCP 和 TLS 分阶段耗时暂未单独采集。": {
+    "zh": "DNS、TCP 和 TLS 分阶段耗时暂未单独采集。",
+    "en": "DNS, TCP and TLS phase timings are not collected separately yet."
+  },
+  "响应正文": {
+    "zh": "响应正文",
+    "en": "Response body"
+  },
+  "无法打开链接": {
+    "zh": "无法打开链接",
+    "en": "Cannot open link"
+  },
+  "JSON 格式化正文": {
+    "zh": "JSON 格式化正文",
+    "en": "Formatted JSON body"
+  },
+  "折叠": {
+    "zh": "折叠",
+    "en": "Collapse"
+  },
+  "项": {
+    "zh": "项",
+    "en": "items"
+  },
+  "请求时间未知": {
+    "zh": "请求时间未知",
+    "en": "Unknown request time"
+  },
+  "已复制到剪贴板": {
+    "zh": "已复制到剪贴板",
+    "en": "Copied to clipboard"
+  },
+  "请求操作": {
+    "zh": "请求操作",
+    "en": "Request actions"
+  },
+  "复制 cURL": {
+    "zh": "复制 cURL",
+    "en": "Copy cURL"
+  },
+  "复制请求头": {
+    "zh": "复制请求头",
+    "en": "Copy request headers"
+  },
+  "复制响应头": {
+    "zh": "复制响应头",
+    "en": "Copy response headers"
+  },
+  "保存请求正文…": {
+    "zh": "保存请求正文…",
+    "en": "Save request body…"
+  },
+  "保存响应正文…": {
+    "zh": "保存响应正文…",
+    "en": "Save response body…"
+  },
+  "取消收藏": {
+    "zh": "取消收藏",
+    "en": "Unstar request"
+  },
+  "收藏请求": {
+    "zh": "收藏请求",
+    "en": "Star request"
+  },
+  "仅查看此域名": {
+    "zh": "仅查看此域名",
+    "en": "Filter by this host"
+  },
+  "请求详情已不可用": {
+    "zh": "请求详情已不可用",
+    "en": "Request details are no longer available"
+  },
+  "正在读取请求详情…": {
+    "zh": "正在读取请求详情…",
+    "en": "Loading request details…"
+  },
+  "请通过 Wails 桌面应用使用网络与证书功能。当前为界面预览。": {
+    "zh": "请通过 Wails 桌面应用使用网络与证书功能。当前为界面预览。",
+    "en": "Use the Wails desktop app for network and certificate features. This is a UI preview."
+  },
+  "请在 mitmAny 桌面应用中连接 Codex。": {
+    "zh": "请在 mitmAny 桌面应用中连接 Codex。",
+    "en": "Connect Codex from the mitmAny desktop app."
+  },
+  "仅支持 HTTP/HTTPS 链接": {
+    "zh": "仅支持 HTTP/HTTPS 链接",
+    "en": "Only HTTP/HTTPS links are supported"
+  },
+  "CONNECT 仅为连接隧道，请选择隧道内的实际请求": {
+    "zh": "CONNECT 仅为连接隧道，请选择隧道内的实际请求",
+    "en": "CONNECT is only a tunnel; select an actual request inside it"
+  },
+  "请求正文尚未完整捕获，无法生成可完整复现的 cURL": {
+    "zh": "请求正文尚未完整捕获，无法生成可完整复现的 cURL",
+    "en": "The request body was not captured completely; a faithful cURL command cannot be generated"
+  },
+  "此请求带有尾部字段，暂不能完整导出为 cURL": {
+    "zh": "此请求带有尾部字段，暂不能完整导出为 cURL",
+    "en": "Requests with trailers cannot be exported faithfully as cURL yet"
+  },
+  "根节点": {
+    "zh": "根节点",
+    "en": "Root"
+  },
+  "WORKSPACE": {
+    "zh": "工作区",
+    "en": "WORKSPACE"
+  },
+  "All requests": {
+    "zh": "全部请求",
+    "en": "All requests"
+  },
+  "Starred": {
+    "zh": "已收藏",
+    "en": "Starred"
+  },
+  "Errors": {
+    "zh": "错误请求",
+    "en": "Errors"
+  },
+  "DOMAINS": {
+    "zh": "域名",
+    "en": "DOMAINS"
+  },
+  "Captured hosts": {
+    "zh": "捕获到的域名",
+    "en": "Captured hosts"
+  },
+  "will appear here.": {
+    "zh": "将在这里显示。",
+    "en": "will appear here."
+  },
+  "Filter by URL, method, status…": {
+    "zh": "按 URL、方法或状态筛选…",
+    "en": "Filter by URL, method, status…"
+  },
+  "YOUR NETWORK, IN FOCUS": {
+    "zh": "看清每一次网络请求",
+    "en": "YOUR NETWORK, IN FOCUS"
+  },
+  "Start your first capture": {
+    "zh": "开始首次抓包",
+    "en": "Start your first capture"
+  },
+  "Stream first": {
+    "zh": "优先转发",
+    "en": "Stream first"
+  },
+  "Local only": {
+    "zh": "本地存储",
+    "en": "Local only"
+  },
+  "WORKSPACE SETTINGS": {
+    "zh": "工作区设置",
+    "en": "WORKSPACE SETTINGS"
+  },
+  "Make yourself at home.": {
+    "zh": "按你的习惯设置。",
+    "en": "Make yourself at home."
+  },
+  "CA Certificate": {
+    "zh": "CA 证书",
+    "en": "CA Certificate"
+  },
+  "System proxy": {
+    "zh": "系统代理",
+    "en": "System proxy"
+  },
+  "Dark appearance": {
+    "zh": "深色外观",
+    "en": "Dark appearance"
+  },
+  "Capture limits": {
+    "zh": "采集上限",
+    "en": "Capture limits"
+  },
+  "Network recovery": {
+    "zh": "网络恢复",
+    "en": "Network recovery"
+  },
+  "LOCAL DATA DIRECTORY": {
+    "zh": "本地数据目录",
+    "en": "LOCAL DATA DIRECTORY"
+  },
+  "SECURITY & TRUST": {
+    "zh": "安全与信任",
+    "en": "SECURITY & TRUST"
+  },
+  "Unlock HTTPS inspection.": {
+    "zh": "开启 HTTPS 内容查看。",
+    "en": "Unlock HTTPS inspection."
+  },
+  "Issued to": {
+    "zh": "证书主体",
+    "en": "Issued to"
+  },
+  "Expires": {
+    "zh": "有效期至",
+    "en": "Expires"
+  },
+  "SHA-256 fingerprint": {
+    "zh": "SHA-256 指纹",
+    "en": "SHA-256 fingerprint"
+  },
+  "Captured response": {
+    "zh": "捕获的响应",
+    "en": "Captured response"
+  },
+  "PDF preview": {
+    "zh": "PDF 预览",
+    "en": "PDF preview"
+  },
+  "Binary response": {
+    "zh": "二进制响应",
+    "en": "Binary response"
+  },
+  "HTTPS inspection": {
+    "zh": "HTTPS 内容查看",
+    "en": "HTTPS inspection"
+  },
+  "Streaming responses": {
+    "zh": "流式响应",
+    "en": "Streaming responses"
+  },
+  "Rich body previews": {
+    "zh": "多种正文预览",
+    "en": "Rich body previews"
+  },
+  "GENERAL": {
+    "zh": "基本信息",
+    "en": "GENERAL"
+  },
+  "Request URL": {
+    "zh": "请求 URL",
+    "en": "Request URL"
+  },
+  "Request method": {
+    "zh": "请求方法",
+    "en": "Request method"
+  },
+  "Status code": {
+    "zh": "状态码",
+    "en": "Status code"
+  },
+  "Protocol": {
+    "zh": "协议",
+    "en": "Protocol"
+  },
+  "Content type": {
+    "zh": "内容类型",
+    "en": "Content type"
+  },
+  "Started at": {
+    "zh": "开始时间",
+    "en": "Started at"
+  },
+  "TRANSFER": {
+    "zh": "传输数据",
+    "en": "TRANSFER"
+  },
+  "Request body": {
+    "zh": "请求正文",
+    "en": "Request body"
+  },
+  "Response body": {
+    "zh": "响应正文",
+    "en": "Response body"
+  },
+  "QUERY PARAMETERS": {
+    "zh": "查询参数",
+    "en": "QUERY PARAMETERS"
+  },
+  "Request headers": {
+    "zh": "请求头",
+    "en": "Request headers"
+  },
+  "Response headers": {
+    "zh": "响应头",
+    "en": "Response headers"
+  },
+  "Request trailers": {
+    "zh": "请求尾部字段",
+    "en": "Request trailers"
+  },
+  "Response trailers": {
+    "zh": "响应尾部字段",
+    "en": "Response trailers"
+  },
+  "REQUEST TIMELINE": {
+    "zh": "请求时间线",
+    "en": "REQUEST TIMELINE"
+  },
+  "Waiting for response": {
+    "zh": "等待响应",
+    "en": "Waiting for response"
+  },
+  "Content download": {
+    "zh": "下载正文",
+    "en": "Content download"
+  },
+  "Total duration": {
+    "zh": "总耗时",
+    "en": "Total duration"
+  },
+  "Nothing matches. Yet.": {
+    "zh": "暂时没有匹配的请求。",
+    "en": "Nothing matches. Yet."
+  },
+  "Listening to your network.": {
+    "zh": "正在等待网络请求。",
+    "en": "Listening to your network."
+  },
+  "Every request tells a story.": {
+    "zh": "从一个请求开始了解网络。",
+    "en": "Every request tells a story."
+  },
+  "CA certificate is trusted": {
+    "zh": "CA 证书已受信任",
+    "en": "CA certificate is trusted"
+  },
+  "CA certificate is not trusted": {
+    "zh": "CA 证书尚未受信任",
+    "en": "CA certificate is not trusted"
+  },
+  "Available in the desktop application": {
+    "zh": "请在桌面应用中查看",
+    "en": "Available in the desktop application"
+  },
+  "Loading request…": {
+    "zh": "正在加载请求…",
+    "en": "Loading request…"
+  },
+  "A closer look.": {
+    "zh": "查看请求详情。",
+    "en": "A closer look."
+  },
+  "Failed": {
+    "zh": "失败",
+    "en": "Failed"
+  },
+  "Pending": {
+    "zh": "等待中",
+    "en": "Pending"
+  },
+  "Completed": {
+    "zh": "已完成",
+    "en": "Completed"
+  },
+  "In progress": {
+    "zh": "进行中",
+    "en": "In progress"
+  },
+  "Waiting": {
+    "zh": "等待中",
+    "en": "Waiting"
+  },
+  "Captured locally": {
+    "zh": "已保存到本机",
+    "en": "Captured locally"
+  },
+  "Streaming": {
+    "zh": "传输中",
+    "en": "Streaming"
+  },
+  "Capturing locally": {
+    "zh": "正在本地采集",
+    "en": "Capturing locally"
+  },
+  "Local session": {
+    "zh": "本地会话",
+    "en": "Local session"
+  },
+  "Overview": {
+    "zh": "概览",
+    "en": "Overview"
+  },
+  "Headers": {
+    "zh": "标头",
+    "en": "Headers"
+  },
+  "Request": {
+    "zh": "请求",
+    "en": "Request"
+  },
+  "Response": {
+    "zh": "响应",
+    "en": "Response"
+  },
+  "Timing": {
+    "zh": "耗时",
+    "en": "Timing"
+  },
+  "Pretty": {
+    "zh": "格式化",
+    "en": "Pretty"
+  },
+  "Raw": {
+    "zh": "原始内容",
+    "en": "Raw"
+  },
+  "All": {
+    "zh": "全部",
+    "en": "All"
+  },
+  "Image": {
+    "zh": "图片",
+    "en": "Image"
+  },
+  "Font": {
+    "zh": "字体",
+    "en": "Font"
+  },
+  "Media": {
+    "zh": "媒体",
+    "en": "Media"
+  },
+  "Other": {
+    "zh": "其他",
+    "en": "Other"
+  },
+  "Status": {
+    "zh": "状态",
+    "en": "Status"
+  },
+  "Method": {
+    "zh": "方法",
+    "en": "Method"
+  },
+  "Name / Host": {
+    "zh": "路径 / 域名",
+    "en": "Name / Host"
+  },
+  "Type": {
+    "zh": "类型",
+    "en": "Type"
+  },
+  "Size": {
+    "zh": "大小",
+    "en": "Size"
+  },
+  "Time": {
+    "zh": "耗时",
+    "en": "Time"
+  },
+  "Waterfall": {
+    "zh": "瀑布图",
+    "en": "Waterfall"
+  },
+  "LIVE": {
+    "zh": "采集中",
+    "en": "LIVE"
+  },
+  "PAUSED": {
+    "zh": "已暂停",
+    "en": "PAUSED"
+  },
+  "IDLE": {
+    "zh": "已停止",
+    "en": "IDLE"
+  },
+  "Capture size limit reached": {
+    "zh": "采集大小达到上限",
+    "en": "Capture size limit reached"
+  },
+  "Capture queue full; forwarding continued": {
+    "zh": "采集队列已满，网络继续转发",
+    "en": "Capture queue full; forwarding continued"
+  },
+  "Body storage failed": {
+    "zh": "正文存储失败",
+    "en": "Body storage failed"
+  },
+  "Stored body exceeds current read limit": {
+    "zh": "已有正文超过当前读取上限",
+    "en": "Stored body exceeds current read limit"
+  },
+  "Imported body incomplete or exceeds capture limit": {
+    "zh": "导入正文不完整或超过采集上限",
+    "en": "Imported body incomplete or exceeds capture limit"
+  },
+  "Capture interrupted": {
+    "zh": "采集中断",
+    "en": "Capture interrupted"
+  },
+  "Desktop application only": {
+    "zh": "仅在桌面应用中可用",
+    "en": "Desktop application only"
+  },
+  "{p0}侧边栏 · {p1} B": {
+    "zh": "{p0}侧边栏 · {p1} B",
+    "en": "{p0} sidebar · {p1} B"
+  },
+  "{p0} · 流式采集 · {p1}": {
+    "zh": "{p0} · 流式采集 · {p1}",
+    "en": "{p0} · Streaming capture · {p1}"
+  },
+  "{p0} 个采集事件未能保存": {
+    "zh": "{p0} 个采集事件未能保存",
+    "en": "{p0} capture events could not be saved"
+  },
+  "已导入 {p0} 条请求": {
+    "zh": "已导入 {p0} 条请求",
+    "en": "Imported {p0} requests"
+  },
+  "域名展示方式：{p0}，点击切换": {
+    "zh": "域名展示方式：{p0}，点击切换",
+    "en": "Host view: {p0}; click to switch"
+  },
+  "点击{p0}子域名": {
+    "zh": "点击{p0}子域名",
+    "en": "Click to {p0} subdomains"
+  },
+  "{p0} · 点击{p1}排序": {
+    "zh": "{p0} · 点击{p1}排序",
+    "en": "{p0} · Click for {p1} sorting"
+  },
+  "已解压 {p0}，显示解压后的正文": {
+    "zh": "已解压 {p0}，显示解压后的正文",
+    "en": "Decoded {p0}; showing the decompressed body"
+  },
+  "已解压 {p0} · ": {
+    "zh": "已解压 {p0} · ",
+    "en": "Decoded {p0} · "
+  },
+  "{p0}字段 {p1}": {
+    "zh": "{p0}字段 {p1}",
+    "en": "{p0} field {p1}"
+  },
+  "在浏览器打开 {p0}": {
+    "zh": "在浏览器打开 {p0}",
+    "en": "Open {p0} in browser"
+  },
+  "展开字段 {p0}": {
+    "zh": "展开字段 {p0}",
+    "en": "Expand field {p0}"
+  },
+  "请求时间：{p0}": {
+    "zh": "请求时间：{p0}",
+    "en": "Request time: {p0}"
+  },
+  "显示 {p0} / {p1} 条请求": {
+    "zh": "显示 {p0} / {p1} 条请求",
+    "en": "{p0} of {p1} requests"
+  },
+  "已捕获 {p0}": {
+    "zh": "已捕获 {p0}",
+    "en": "{p0} captured"
+  },
+  "语言": {
+    "zh": "语言",
+    "en": "Language"
+  },
+  "界面语言会自动保存，下次启动继续使用。": {
+    "zh": "界面语言会自动保存，下次启动继续使用。",
+    "en": "Your language preference is saved for the next launch."
+  },
+  "Failed requests": {
+    "zh": "失败请求",
+    "en": "Failed requests"
+  }
+}

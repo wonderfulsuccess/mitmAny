@@ -52,6 +52,7 @@ type harEntry struct {
 		ResponseTrailers http.Header `json:"responseTrailers"`
 		Truncated        bool        `json:"truncated"`
 		Error            string      `json:"error"`
+		CaptureNote      string      `json:"captureNote"`
 	} `json:"_mitmAny"`
 }
 
@@ -62,7 +63,7 @@ func (s *Store) ImportHAR(reader io.Reader) (int, error) {
 			Entries []harEntry `json:"entries"`
 		} `json:"log"`
 	}
-	decoder := json.NewDecoder(reader)
+	decoder := json.NewDecoder(io.LimitReader(reader, 64*1024*1024+1))
 	if err := decoder.Decode(&document); err != nil {
 		return 0, fmt.Errorf("无法解析 HAR: %w", err)
 	}
@@ -117,12 +118,10 @@ func (s *Store) ImportHAR(reader io.Reader) (int, error) {
 		if contentType == "" {
 			contentType = headers(e.Response.Headers).Get("Content-Type")
 		}
-		html := isHTML(contentType)
-		truncated := e.Meta.Truncated || len(req) > PreviewLimit || (!html && len(res) > PreviewLimit)
+		limit := responseLimit(contentType)
+		truncated := e.Meta.Truncated || len(req) > PreviewLimit || len(res) > limit
 		req = req[:min(len(req), PreviewLimit)]
-		if !html {
-			res = res[:min(len(res), PreviewLimit)]
-		}
+		res = res[:min(len(res), limit)]
 		requestHeaders, responseHeaders := headers(e.Request.Headers), headers(e.Response.Headers)
 		// HAR content is decoded per the format. Don't decompress it a second time.
 		if e.Meta.ResponseEncoding != "compressed" {
@@ -137,7 +136,13 @@ func (s *Store) ImportHAR(reader io.Reader) (int, error) {
 		st := &flowState{detail: Detail{Summary: Summary{ID: uuid.NewString(), Method: e.Request.Method, URL: u.String(), Host: u.Host, Path: u.RequestURI(), Scheme: u.Scheme, Protocol: e.Request.Protocol, Status: e.Response.Status, ContentType: contentType, Started: started.UnixMilli(), Duration: max(0, e.Time), TTFB: max(0, e.Timings.Wait), Complete: true, Error: e.Meta.Error}, RequestHeaders: requestHeaders, ResponseHeaders: responseHeaders, RequestTrailers: e.Meta.RequestTrailers, ResponseTrailers: e.Meta.ResponseTrailers}}
 		st.requestBytes.Store(max(int64(len(req)), e.Request.BodySize))
 		st.responseBytes.Store(max(int64(len(res)), e.Response.Content.Size))
-		st.lost.Store(truncated)
+		if truncated {
+			reason := e.Meta.CaptureNote
+			if reason == "" {
+				reason = "Imported body incomplete or exceeds capture limit"
+			}
+			st.truncate(reason)
+		}
 		s.update(st, true)
 		s.append(st, true, req)
 		s.append(st, false, res)

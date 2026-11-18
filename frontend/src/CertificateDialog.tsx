@@ -1,3 +1,4 @@
+import { tr, diagnostic, getLocale } from "./i18n";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
@@ -76,8 +77,8 @@ export default function CertificateDialog({
       }}
     >
       <div className="modal-top">
-        <span>SECURITY & TRUST</span>
-        <button aria-label="关闭证书管理" disabled={!!busy} onClick={onClose}>
+        <span>{tr("SECURITY & TRUST")}</span>
+        <button aria-label={tr("关闭证书管理")} disabled={!!busy} onClick={onClose}>
           <X size={18} />
         </button>
       </div>
@@ -85,12 +86,10 @@ export default function CertificateDialog({
         <div className={`shield-icon ${certificate?.trusted ? "trusted" : ""}`}>
           <ShieldCheck size={30} />
         </div>
-        <h2>Unlock HTTPS inspection.</h2>
+        <h2>{tr("Unlock HTTPS inspection.")}</h2>
         <p>
-          安装本机专属的 CA 证书，以查看加密请求。
-          <br />
-          私钥始终保存在你的设备上。
-        </p>
+          {tr("安装本机专属的 CA 证书，以查看加密请求。")}<br />
+          {tr("私钥始终保存在你的设备上。")}</p>
       </div>
       <div className={`trust-status ${certificate?.trusted ? "trusted" : ""}`}>
         {certificate?.trusted ? (
@@ -101,18 +100,18 @@ export default function CertificateDialog({
         <div>
           <strong>
             {certificate?.trusted
-              ? "CA certificate is trusted"
-              : "CA certificate is not trusted"}
+              ? tr("CA certificate is trusted")
+              : tr("CA certificate is not trusted")}
           </strong>
           <span>
             {certificate?.trusted
-              ? "已通过系统证书信任检查"
-              : "系统会显示证书授权提示"}
+              ? tr("已通过系统证书信任检查")
+              : tr("系统会显示证书授权提示")}
           </span>
         </div>
         <button
-          title="重新检查"
-          aria-label="重新检查证书"
+          title={tr("重新检查")}
+          aria-label={tr("重新检查证书")}
           disabled={!!busy}
           onClick={() => action("check", api.GetCertificateStatus)}
         >
@@ -121,32 +120,31 @@ export default function CertificateDialog({
       </div>
       <div className="certificate-info">
         <div>
-          <span>Issued to</span>
+          <span>{tr("Issued to")}</span>
           <strong>{certificate?.subject || "mitmAny Local CA"}</strong>
         </div>
         <div>
-          <span>Expires</span>
+          <span>{tr("Expires")}</span>
           <strong>
             {certificate?.expires
-              ? new Date(certificate.expires).toLocaleDateString()
+              ? new Date(certificate.expires).toLocaleDateString(getLocale())
               : "—"}
           </strong>
         </div>
         <div className="fingerprint">
           <span>
-            <Fingerprint size={13} /> SHA-256 fingerprint
-          </span>
+            <Fingerprint size={13} />  {tr("SHA-256 fingerprint")}</span>
           <code>
-            {certificate?.fingerprint || "Available in the desktop application"}
+            {certificate?.fingerprint || tr("Available in the desktop application")}
           </code>
         </div>
       </div>
       {running ? (
-        <div className="notice">请先停止抓包，再安装或卸载证书。</div>
+        <div className="notice">{tr("请先停止抓包，再安装或卸载证书。")}</div>
       ) : null}
       {error ? (
         <div role="alert" className="error-box">
-          {error}
+          {diagnostic(error)}
         </div>
       ) : null}
       <button
@@ -162,10 +160,10 @@ export default function CertificateDialog({
           <ShieldCheck size={16} />
         )}{" "}
         {busy === "install"
-          ? "等待系统授权…"
+          ? tr("等待系统授权…")
           : certificate?.trusted
-            ? "重新安装 CA 证书"
-            : "安装并信任 CA 证书"}
+            ? tr("重新安装 CA 证书")
+            : tr("安装并信任 CA 证书")}
         <ChevronRight size={16} />
       </button>
       {isMac ? (
@@ -175,12 +173,9 @@ export default function CertificateDialog({
             disabled={!!busy || running}
             onClick={() => action("keychain", api.OpenCertificateInKeychain)}
           >
-            打开钥匙串
-          </button>
+            {tr("打开钥匙串")}</button>
           <p>
-            如系统授权仍不可用：导入本机 CA 后，在钥匙串中双击“mitmAny Local
-            CA”，展开“信任”，将“使用此证书时”设为“始终信任”，完成系统授权后点击“重新检查”。
-          </p>
+            {tr("如系统授权仍不可用：导入本机 CA 后，在钥匙串中双击“mitmAny Local CA”，展开“信任”，将“使用此证书时”设为“始终信任”，完成系统授权后点击“重新检查”。")}</p>
         </div>
       ) : null}
       <div className="cert-actions">
@@ -189,18 +184,15 @@ export default function CertificateDialog({
           onClick={() => action("export", api.ExportCertificate)}
         >
           <ArrowDownToLine size={14} />
-          导出公钥证书
-        </button>
+          {tr("导出公钥证书")}</button>
         <button
           disabled={!!busy || running || !certificate?.trusted}
           onClick={() => action("uninstall", api.UninstallCertificate)}
         >
-          卸载证书
-        </button>
+          {tr("卸载证书")}</button>
       </div>
       <div className="modal-note">
-        <Check size={12} /> 仅用于本机调试 · Firefox 等应用可能需要独立导入证书
-      </div>
+        <Check size={12} />  {tr("仅用于本机调试 · Firefox 等应用可能需要独立导入证书")}</div>
     </dialog>
   );
 }

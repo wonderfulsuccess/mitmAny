@@ -1,3 +1,4 @@
+import { tr, getLocale } from "./i18n";
 import { useSyncExternalStore } from "react";
 import { relativeRequestTime } from "./relativeTime";
 
@@ -20,5 +21,5 @@ function subscribe(listener: () => void) {
 export default function RequestAge({ started }: { started: number }) {
   const current = useSyncExternalStore(subscribe, snapshot);
   const valid = Number.isFinite(started) && started > 0;
-  return <time dateTime={valid ? new Date(started).toISOString() : undefined} title={valid ? `请求时间：${new Date(started).toLocaleString()}` : "请求时间未知"}>{relativeRequestTime(started, current)}</time>;
+  return <time dateTime={valid ? new Date(started).toISOString() : undefined} title={valid ? tr("请求时间：{p0}", {p0: new Date(started).toLocaleString(getLocale())}) : tr("请求时间未知")}>{relativeRequestTime(started, current)}</time>;
 }

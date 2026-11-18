@@ -1,3 +1,4 @@
+import { tr } from "./i18n";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Copy, Download, Filter, Star } from "lucide-react";
@@ -47,10 +48,10 @@ export default function RequestMenu({ flow, x, y, starred, anchor, onClose, onSt
     catch (e) { notify(errorText(e)); }
     onClose();
   };
-  const copy = async (value: string) => { await navigator.clipboard.writeText(value); notify("已复制到剪贴板"); };
+  const copy = async (value: string) => { await navigator.clipboard.writeText(value); notify(tr("已复制到剪贴板")); };
   const save = (request: boolean) => api.SaveBody(flow.id, request);
   return createPortal(
-    <div ref={menu} className="request-context-menu" style={position} role="menu" aria-label="请求操作"
+    <div ref={menu} className="request-context-menu" style={position} role="menu" aria-label={tr("请求操作")}
       onContextMenu={e => e.preventDefault()}
       onKeyDown={e => {
         e.stopPropagation();
@@ -66,17 +67,17 @@ export default function RequestMenu({ flow, x, y, starred, anchor, onClose, onSt
         e.preventDefault(); buttons[next]?.focus();
       }}>
       <div className="request-menu-label" title={flow.url}>{flow.method} · {flow.host}</div>
-      <button role="menuitem" disabled={!detail || flow.method === "CONNECT"} onClick={() => run(() => copy(requestCurl(detail!)))}><Copy size={13} />复制 cURL</button>
-      <button role="menuitem" onClick={() => run(() => copy(flow.url))}><Copy size={13} />复制 URL</button>
-      <button role="menuitem" disabled={!detail} onClick={() => run(() => copy(headerText(detail!.requestHeaders)))}><Copy size={13} />复制请求头</button>
-      <button role="menuitem" disabled={!detail} onClick={() => run(() => copy(headerText(detail!.responseHeaders)))}><Copy size={13} />复制响应头</button>
+      <button role="menuitem" disabled={!detail || flow.method === "CONNECT"} onClick={() => run(() => copy(requestCurl(detail!)))}><Copy size={13} />{tr("复制 cURL")}</button>
+      <button role="menuitem" onClick={() => run(() => copy(flow.url))}><Copy size={13} />{tr("复制 URL")}</button>
+      <button role="menuitem" disabled={!detail} onClick={() => run(() => copy(headerText(detail!.requestHeaders)))}><Copy size={13} />{tr("复制请求头")}</button>
+      <button role="menuitem" disabled={!detail} onClick={() => run(() => copy(headerText(detail!.responseHeaders)))}><Copy size={13} />{tr("复制响应头")}</button>
       <div role="separator" />
-      <button role="menuitem" disabled={!detail?.requestBody} onClick={() => run(() => save(true))}><Download size={13} />保存请求正文…</button>
-      <button role="menuitem" disabled={!detail?.responseBody} onClick={() => run(() => save(false))}><Download size={13} />保存响应正文…</button>
+      <button role="menuitem" disabled={!detail?.requestBody} onClick={() => run(() => save(true))}><Download size={13} />{tr("保存请求正文…")}</button>
+      <button role="menuitem" disabled={!detail?.responseBody} onClick={() => run(() => save(false))}><Download size={13} />{tr("保存响应正文…")}</button>
       <div role="separator" />
-      <button role="menuitem" onClick={() => run(onStar)}><Star size={13} fill={starred ? "currentColor" : "none"} />{starred ? "取消收藏" : "收藏请求"}</button>
-      <button role="menuitem" onClick={() => run(onFilter)}><Filter size={13} />仅查看此域名</button>
-      {!detail ? <div className="request-menu-label">{failed ? "请求详情已不可用" : "正在读取请求详情…"}</div> : null}
+      <button role="menuitem" onClick={() => run(onStar)}><Star size={13} fill={starred ? "currentColor" : "none"} />{starred ? tr("取消收藏") : tr("收藏请求")}</button>
+      <button role="menuitem" onClick={() => run(onFilter)}><Filter size={13} />{tr("仅查看此域名")}</button>
+      {!detail ? <div className="request-menu-label">{failed ? tr("请求详情已不可用") : tr("正在读取请求详情…")}</div> : null}
     </div>, document.body,
   );
 }

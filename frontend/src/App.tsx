@@ -1,3 +1,5 @@
+import { tr, diagnostic, getLocale, setLocale } from "./i18n";
+import { useLocale } from "./useLocale";
 import {
   lazy,
   Suspense,
@@ -12,6 +14,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Activity,
+  RotateCcw,
   TriangleAlert,
   ArrowDown,
   ArrowDownToLine,
@@ -53,6 +56,7 @@ import RequestAge from "./RequestAge";
 import RequestMenu from "./RequestMenu";
 import Inspector from "./Inspector";
 import "./App.css";
+import { version } from "../package.json";
 const AndroidDialog = lazy(() => import("./AndroidDialog"));
 const CertificateDialog = lazy(() => import("./CertificateDialog"));
 const filters = [
@@ -99,6 +103,8 @@ function measureDomain(button: HTMLElement) {
   label.style.setProperty("--domain-duration", `${Math.max(3, overflow / 30 + 1)}s`);
 }
 function App() {
+  const locale = useLocale();
+  useEffect(() => { void api.SetLanguage(locale).catch(error => console.error("Could not sync native dialog language", error)); }, [locale]);
   const [state, setState] = useState(initialState);
   const [flows, setFlows] = useState<Flow[]>([]);
   const [stats, setStats] = useState({ total: 0, bytes: 0, dropped: 0 });
@@ -443,21 +449,21 @@ function App() {
           <div className="window-controls">
             <button
               className="close"
-              aria-label="关闭窗口"
+              aria-label={tr("关闭窗口")}
               onClick={() => api.WindowAction("close")}
             >
               <X size={8} />
             </button>
             <button
               className="minimise"
-              aria-label="最小化窗口"
+              aria-label={tr("最小化窗口")}
               onClick={() => api.WindowAction("minimise")}
             >
               <Minus size={8} />
             </button>
             <button
               className="maximise"
-              aria-label="最大化窗口"
+              aria-label={tr("最大化窗口")}
               onClick={() => api.WindowAction("maximise")}
             >
               <Square size={7} />
@@ -467,16 +473,16 @@ function App() {
             <span className="title-mark">
               <Activity size={13} />
             </span>
-            mitmAny <span className="version">1.1</span>
+            mitmAny <span className="version">{version}</span>
           </div>
         </div>
         <div className="titlebar-workspace">
           <button
             className="titlebar-action sidebar-toggle"
-            aria-label={(compact ? !mobileSidebarOpen : sidebarHidden) ? "显示侧边栏" : "隐藏侧边栏"}
+            aria-label={(compact ? !mobileSidebarOpen : sidebarHidden) ? tr("显示侧边栏") : tr("隐藏侧边栏")}
             aria-expanded={compact ? mobileSidebarOpen : !sidebarHidden}
             aria-controls="workspace-sidebar"
-            title={`${(compact ? !mobileSidebarOpen : sidebarHidden) ? "显示" : "隐藏"}侧边栏 · ${state.platform === "darwin" ? "⌘" : "Ctrl"} B`}
+            title={tr("{p0}侧边栏 · {p1} B", {p0: (compact ? !mobileSidebarOpen : sidebarHidden) ? tr("显示") : tr("隐藏"), p1: state.platform === "darwin" ? "⌘" : "Ctrl"})}
             onClick={() => compact ? setMobileSidebarOpen(open => !open) : setSidebarHidden(hidden => !hidden)}
           >
             {(compact ? !mobileSidebarOpen : sidebarHidden) ? (
@@ -485,40 +491,44 @@ function App() {
               <PanelLeftClose size={17} />
             )}
           </button>
-          <h1 className="titlebar-view" title={host || "All requests"}>
+          <h1 className="titlebar-view" title={host || tr("All requests")}>
             {host ||
               (view === "starred"
                 ? "Starred requests"
                 : view === "errors"
-                  ? "Failed requests"
-                  : "All requests")}
+                  ? tr("Failed requests")
+                  : tr("All requests"))}
           </h1>
           <span
             className={`live-badge ${capturing ? "live" : ""} ${stats.dropped ? "capture-warning" : ""}`}
-            title={`${capturing ? (state.recording ? android.enabled ? "Android 采集中" : "正在采集" : "采集记录已暂停") : "采集已停止"} · 流式采集 · ${stats.dropped ? `${stats.dropped} 个采集事件未能保存` : "无采集事件丢失"}`}
-            aria-label={`${capturing ? state.recording ? "正在采集" : "采集记录已暂停" : "采集已停止"}，${stats.dropped ? `${stats.dropped} 个采集事件未能保存` : "无采集事件丢失"}`}
+            title={tr("{p0} · 流式采集 · {p1}", {p0: capturing ? (state.recording ? android.enabled ? tr("Android 采集中") : tr("正在采集") : tr("采集记录已暂停")) : tr("采集已停止"), p1: stats.dropped ? tr("{p0} 个采集事件未能保存", {p0: stats.dropped}) : tr("无采集事件丢失")})}
+            aria-label={`${capturing ? state.recording ? tr("正在采集") : tr("采集记录已暂停") : tr("采集已停止")}，${stats.dropped ? tr("{p0} 个采集事件未能保存", {p0: stats.dropped}) : tr("无采集事件丢失")}`}
             role="status"
           >
             <span />
-            <b className="live-label">{capturing ? (state.recording ? "LIVE" : "PAUSED") : "IDLE"}</b>
+            <b className="live-label">{capturing ? (state.recording ? tr("LIVE") : tr("PAUSED")) : tr("IDLE")}</b>
             {stats.dropped ? <TriangleAlert size={11} aria-hidden="true" /> : null}
           </span>
           <div className="titlebar-drag-space" />
           <div
             className="titlebar-actions"
             role="toolbar"
-            aria-label="流量工具"
+            aria-label={tr("流量工具")}
           >
-            <button className={`titlebar-action android-entry ${android.enabled ? "connected" : ""}`} aria-label="Android 手机代理" title={android.enabled ? "Android 手机代理已开启" : android.pending.length ? "Android 手机代理 · 有待恢复设备" : "Android 手机代理与 CA 安装"} onClick={() => setAndroidOpen(true)}><Smartphone size={16} /></button>
+            <button className={`titlebar-action android-entry ${android.enabled ? "connected" : ""}`} aria-label={tr("Android 手机代理")} title={android.enabled ? tr("Android 手机代理已开启") : android.pending.length ? tr("Android 手机代理 · 有待恢复设备") : tr("Android 手机代理与 CA 安装")} onClick={() => setAndroidOpen(true)}><Smartphone size={16} /></button>
+            <button className="titlebar-action" aria-label={tr("恢复电脑网络")} title={tr("恢复抓包前的电脑系统代理")} disabled={busy}
+              onClick={() => { setBusy(true); api.RecoverNetwork().then(next => { setState(next); notify(tr("电脑系统代理已恢复；手机代理请在 Android 面板恢复")); }).catch(e => notify(errorText(e))).finally(() => setBusy(false)); }}>
+              <RotateCcw size={16} />
+            </button>
             <span className="titlebar-divider" />
             <button
               className="titlebar-action"
-              title="导入 HAR 会话"
-              aria-label="导入 HAR"
+              title={tr("导入 HAR 会话")}
+              aria-label={tr("导入 HAR")}
               onClick={() =>
                 api
                   .ImportHAR()
-                  .then((n) => n && notify(`已导入 ${n} 条请求`))
+                  .then((n) => n && notify(tr("已导入 {p0} 条请求", {p0: n})))
                   .catch((e) => notify(errorText(e)))
               }
             >
@@ -526,8 +536,8 @@ function App() {
             </button>
             <button
               className="titlebar-action"
-              title="导出已捕获的数据为 HAR"
-              aria-label="导出 HAR"
+              title={tr("导出已捕获的数据为 HAR")}
+              aria-label={tr("导出 HAR")}
               onClick={() => api.ExportHAR().catch((e) => notify(errorText(e)))}
             >
               <ArrowDownToLine size={16} />
@@ -536,10 +546,10 @@ function App() {
             <button
               className={`titlebar-action titlebar-capture ${state.running ? "is-running" : ""}`}
               aria-label={
-                busy ? "正在连接代理" : state.running ? "停止抓包" : "开始抓包"
+                busy ? tr("正在连接代理") : state.running ? tr("停止抓包") : tr("开始抓包")
               }
               title={
-                busy ? "正在连接代理…" : state.running ? "停止抓包" : "开始抓包"
+                busy ? tr("正在连接代理…") : state.running ? tr("停止抓包") : tr("开始抓包")
               }
               aria-pressed={state.running}
               disabled={busy}
@@ -555,8 +565,8 @@ function App() {
             </button>
             <button
               className="titlebar-action"
-              title="Settings · 设置"
-              aria-label="设置"
+              title={tr("Settings · 设置")}
+              aria-label={tr("设置")}
               onClick={() => setSettingsOpen(true)}
             >
               <Settings2 size={16} />
@@ -565,11 +575,11 @@ function App() {
         </div>
       </header>
       <div className="workspace">
-        {compact && mobileSidebarOpen ? <button className="sidebar-scrim" aria-label="关闭侧边栏" onClick={() => setMobileSidebarOpen(false)} /> : null}
+        {compact && mobileSidebarOpen ? <button className="sidebar-scrim" aria-label={tr("关闭侧边栏")} onClick={() => setMobileSidebarOpen(false)} /> : null}
         <aside className="sidebar" id="workspace-sidebar" onClick={e => {
           if (compact && (e.target as HTMLElement).closest("button")) { setMobileSidebarOpen(false); setSelected(null); }
         }}>
-          <div className="nav-label">WORKSPACE</div>
+          <div className="nav-label">{tr("WORKSPACE")}</div>
           <nav>
             <button
               className={
@@ -578,15 +588,14 @@ function App() {
               onClick={() => changeView("all")}
             >
               <Layers3 size={16} />
-              All requests<span className="count">{flows.length}</span>
+              {tr("All requests")}<span className="count">{flows.length}</span>
             </button>
             <button
               className={view === "starred" ? "nav-item active" : "nav-item"}
               onClick={() => changeView("starred")}
             >
               <Star size={16} />
-              Starred
-              <span className="count">
+              {tr("Starred")}<span className="count">
                 {flows.filter((f) => stars.includes(f.id)).length || ""}
               </span>
             </button>
@@ -595,29 +604,28 @@ function App() {
               onClick={() => changeView("errors")}
             >
               <Activity size={16} />
-              Errors
-              <span className="count">
+              {tr("Errors")}<span className="count">
                 {flows.filter((f) => f.error || f.status >= 400).length || ""}
               </span>
             </button>
           </nav>
           <div className="nav-label domains-label">
-            DOMAINS<span aria-live="polite">{domainQuery.trim() ? `${filteredDomains.length}/${domains.length}` : domains.length}</span>
-            <button className="domain-mode" aria-label={`域名展示方式：${domainGrouped ? "主域名分组" : "子域名平铺"}，点击切换`} aria-pressed={domainGrouped} title={domainGrouped ? "切换为所有域名平铺" : "切换为主域名分组"}
+            {tr("DOMAINS")}<span aria-live="polite">{domainQuery.trim() ? `${filteredDomains.length}/${domains.length}` : domains.length}</span>
+            <button className="domain-mode" aria-label={tr("域名展示方式：{p0}，点击切换", {p0: domainGrouped ? tr("主域名分组") : tr("子域名平铺")})} aria-pressed={domainGrouped} title={domainGrouped ? tr("切换为所有域名平铺") : tr("切换为主域名分组")}
               onClick={e => { e.stopPropagation(); setDomainGrouped(value => !value); setExpandedDomains(new Map()); }}>
-              {domainGrouped ? "分组" : "平铺"}
+              {domainGrouped ? tr("分组") : tr("平铺")}
             </button>
           </div>
           <div className="domain-search">
             <Search size={13} />
             <input
-              type="search" aria-label="搜索域名" placeholder="搜索域名…" value={domainQuery}
+              type="search" aria-label={tr("搜索域名")} placeholder={tr("搜索域名…")} value={domainQuery}
               onChange={e => { setDomainQuery(e.target.value); setExpandedDomains(new Map()); }}
               onKeyDown={e => {
                 if (e.key === "Escape" && domainQuery) { e.stopPropagation(); setDomainQuery(""); }
               }}
             />
-            {domainQuery ? <button aria-label="清空域名搜索" title="清空域名搜索" onClick={e => { e.stopPropagation(); setDomainQuery(""); }}><X size={12} /></button> : null}
+            {domainQuery ? <button aria-label={tr("清空域名搜索")} title={tr("清空域名搜索")} onClick={e => { e.stopPropagation(); setDomainQuery(""); }}><X size={12} /></button> : null}
           </div>
           <div className="domain-list">
             {filteredDomains.length ? (
@@ -627,7 +635,7 @@ function App() {
                 return <div className="domain-group" key={group.name}>
                     <button
                       className={host === group.name && (domainGrouped ? hostScope === "root" || !expandable : hostScope === "host") ? "domain active" : "domain"}
-                      title={`${group.name} · ${expandable ? `点击${expanded ? "收起" : "展开"}子域名` : "筛选此域名的请求"}`}
+                      title={`${group.name} · ${expandable ? tr("点击{p0}子域名", {p0: expanded ? tr("收起") : tr("展开")}) : tr("筛选此域名的请求")}`}
                       aria-expanded={expandable ? expanded : undefined}
                       onMouseEnter={e => measureDomain(e.currentTarget)} onFocus={e => measureDomain(e.currentTarget)}
                       onClick={e => {
@@ -657,7 +665,7 @@ function App() {
               <div className="domain-placeholder">
                 <Globe2 size={16} />
                 <p>
-                  {domains.length ? "没有匹配的域名" : <>Captured hosts<br />will appear here.</>}
+                  {domains.length ? tr("没有匹配的域名") : <>{tr("Captured hosts")}<br />{tr("will appear here.")}</>}
                 </p>
               </div>
             )}
@@ -667,9 +675,9 @@ function App() {
           {state.error || state.recoveryPending || state.storageError ? (
             <div className="network-alert" role="alert">
               <span>
-                {state.error ||
+                {diagnostic(state.error ||
                   state.storageError ||
-                  "发现未恢复的系统代理配置"}
+                  tr("发现未恢复的系统代理配置"))}
               </span>
               <button
                 onClick={() =>
@@ -679,8 +687,7 @@ function App() {
                     .catch((e) => notify(errorText(e)))
                 }
               >
-                恢复网络
-              </button>
+                {tr("恢复网络")}</button>
             </div>
           ) : null}
           <div
@@ -701,27 +708,27 @@ function App() {
                     ref={search}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Filter by URL, method, status…"
-                    aria-label="搜索请求"
+                    placeholder={tr("Filter by URL, method, status…")}
+                    aria-label={tr("搜索请求")}
                   />
                   <kbd>{state.platform === "darwin" ? "⌘" : "Ctrl"} F</kbd>
                   {query ? (
-                    <button aria-label="清空搜索" onClick={() => setQuery("")}>
+                    <button aria-label={tr("清空搜索")} onClick={() => setQuery("")}>
                       <X size={12} />
                     </button>
                   ) : null}
                 </label>
-                <div className="scroll-mode" role="group" aria-label="流量列表滚动模式">
-                  <button className={autoScroll ? "active" : ""} aria-pressed={autoScroll} title="触底：始终跟随最新请求" onClick={() => setAutoScroll(true)}><ArrowDown size={12} />触底</button>
-                  <button className={!autoScroll ? "active" : ""} aria-pressed={!autoScroll} title="定住：保持当前阅读位置，手动滚动" onClick={() => setAutoScroll(false)}><Pin size={12} />定住</button>
+                <div className="scroll-mode" role="group" aria-label={tr("流量列表滚动模式")}>
+                  <button className={autoScroll ? "active" : ""} aria-pressed={autoScroll} title={tr("触底：始终跟随最新请求")} onClick={() => setAutoScroll(true)}><ArrowDown size={12} />{tr("触底")}</button>
+                  <button className={!autoScroll ? "active" : ""} aria-pressed={!autoScroll} title={tr("定住：保持当前阅读位置，手动滚动")} onClick={() => setAutoScroll(false)}><Pin size={12} />{tr("定住")}</button>
                 </div>
                 <button
                   className="icon-button"
                   aria-label={
-                    state.recording ? "暂停记录新请求" : "继续记录请求"
+                    state.recording ? tr("暂停记录新请求") : tr("继续记录请求")
                   }
                   title={
-                    state.recording ? "暂停记录（保持代理转发）" : "继续记录"
+                    state.recording ? tr("暂停记录（保持代理转发）") : tr("继续记录")
                   }
                   onClick={() =>
                     api
@@ -734,8 +741,8 @@ function App() {
                 </button>
                 <button
                   className="icon-button"
-                  aria-label="清空会话"
-                  title="清空本地会话"
+                  aria-label={tr("清空会话")}
+                  title={tr("清空本地会话")}
                   onClick={clear}
                 >
                   <Trash2 size={15} />
@@ -745,17 +752,17 @@ function App() {
                 {filters.map((f) => (
                   <button
                     className={type === f ? "active" : ""}
-                    key={f}
+                    key={tr(f)}
                     onClick={() => setType(f)}
                   >
-                    {f}
+                    {tr(f)}
                   </button>
                 ))}
               </div>
               <div
                 className="request-table"
                 role="table"
-                aria-label="捕获的网络请求"
+                aria-label={tr("捕获的网络请求")}
                 aria-rowcount={visible.length + 1}
               >
                 <div className="table-head request-grid" role="row">
@@ -763,9 +770,9 @@ function App() {
                     const active = sort.key === column.key;
                     const ascending = active && sort.direction === "asc";
                     return <div key={column.key} role="columnheader" aria-sort={active ? ascending ? "ascending" : "descending" : "none"} className={active ? "sorted-column" : ""}>
-                      <button title={`${column.description} · 点击${active ? ascending ? "逆序" : "正序" : "正序"}排序`}
+                      <button title={tr("{p0} · 点击{p1}排序", {p0: tr(column.description), p1: active ? ascending ? tr("逆序") : tr("正序") : tr("正序")})}
                         onClick={() => setSort(current => ({ key: column.key, direction: current.key === column.key && current.direction === "asc" ? "desc" : "asc" }))}>
-                        <span>{column.label}</span>{active ? ascending ? <ArrowUp size={9} /> : <ArrowDown size={9} /> : <ArrowUpDown size={9} />}
+                        <span>{tr(column.label)}</span>{active ? ascending ? <ArrowUp size={9} /> : <ArrowDown size={9} /> : <ArrowUpDown size={9} />}
                       </button>
                     </div>;
                   })}
@@ -832,7 +839,7 @@ function App() {
                               role="cell"
                               className={`resource-type ${resourceType(f.contentType, f.url).toLowerCase()}`}
                             >
-                              {resourceType(f.contentType, f.url)}
+                              {tr(resourceType(f.contentType, f.url))}
                             </span>
                             <span role="cell" className="number">
                               {size(f.responseSize)}
@@ -850,7 +857,7 @@ function App() {
                                   width: `${Math.max(5, Math.min(100, (f.duration / maxDuration) * 100))}%`,
                                 }}
                               />
-                              {stars.includes(f.id) ? <span className="row-star starred" title="已收藏"><Star size={11} fill="currentColor" /></span> : null}
+                              {stars.includes(f.id) ? <span className="row-star starred" title={tr("已收藏")}><Star size={11} fill="currentColor" /></span> : null}
                             </span>
                           </div>
                         );
@@ -868,21 +875,26 @@ function App() {
                         <span className="orbit-dot b" />
                         <span className="orbit-dot c" />
                       </div>
-                      <span className="eyebrow">YOUR NETWORK, IN FOCUS</span>
+                      <span className="eyebrow">{tr("YOUR NETWORK, IN FOCUS")}</span>
                       <h2>
                         {flows.length
-                          ? "Nothing matches. Yet."
+                          ? tr("Nothing matches. Yet.")
                           : capturing
-                            ? "Listening to your network."
-                            : "Every request tells a story."}
+                            ? tr("Listening to your network.")
+                            : tr("Every request tells a story.")}
                       </h2>
                       <p>
                         {flows.length
-                          ? "调整筛选条件，找到你关心的请求。"
+                          ? tr("调整筛选条件，找到你关心的请求。")
                           : capturing
-                            ? "在浏览器或应用中发起请求，流量将在这里实时出现。"
-                            : "Capture, inspect, and understand your traffic.\n从一个请求开始，看清网络的每一个细节。"}
+                            ? tr("在浏览器或应用中发起请求，流量将在这里实时出现。")
+                            : tr("Capture, inspect, and understand your traffic. 从一个请求开始，看清网络的每一个细节。")}
                       </p>
+                      {!flows.length ? <div className="capture-guide" aria-label={tr("首次抓包指引")}>
+                        <div><strong>{tr("1 · HTTPS 证书")}</strong><span>{certificate ? certificate.trusted ? tr("已信任，可以查看 HTTPS 正文") : tr("尚未信任，HTTPS 将仅透传") : tr("正在检查证书…")}</span><button className="secondary" onClick={() => setCertOpen(true)}>{tr("管理证书")}</button></div>
+                        <div><strong>{tr("2 · 选择流量来源")}</strong><span>{android.enabled ? tr("Android 手机代理已开启") : state.running ? state.systemProxy ? tr("电脑系统代理已开启") : tr("手动代理模式") : systemProxy ? tr("开始后启用电脑系统代理") : tr("开始后需手动配置代理")}</span><button className="secondary" onClick={() => setAndroidOpen(true)}>{tr("Android 手机")}</button></div>
+                        <div><strong>{tr("3 · 发起请求")}</strong><span>{tr("访问网页或操作应用，再选择请求查看详情。")}</span></div>
+                      </div> : null}
                       {!flows.length && !capturing ? (
                         <button
                           className="primary"
@@ -890,8 +902,7 @@ function App() {
                           onClick={toggleCapture}
                         >
                           <Play size={13} fill="currentColor" />
-                          Start your first capture
-                        </button>
+                          {tr("Start your first capture")}</button>
                       ) : null}
                       <div className="empty-capabilities">
                         <span>
@@ -900,17 +911,14 @@ function App() {
                         </span>
                         <span>
                           <Zap size={12} />
-                          Stream first
-                        </span>
+                          {tr("Stream first")}</span>
                         <span>
                           <HardDrive size={12} />
-                          Local only
-                        </span>
+                          {tr("Local only")}</span>
                       </div>
                       {!isDesktop() ? (
                         <small className="preview-note">
-                          Browser preview · 网络功能请在桌面应用中使用
-                        </small>
+                          {tr("Browser preview · 网络功能请在桌面应用中使用")}</small>
                       ) : null}
                     </div>
                   )}
@@ -918,18 +926,18 @@ function App() {
               </div>
               <div className="table-footer">
                 <span>
-                  {visible.length} of {stats.total} requests
+                  {tr("显示 {p0} / {p1} 条请求", {p0: visible.length, p1: stats.total})}
                 </span>
-                <span>{size(stats.bytes)} captured</span>
+                <span>{tr("已捕获 {p0}", {p0: size(stats.bytes)})}</span>
                 <span className="local-indicator">
                   <span className="dot" />
-                  {capturing ? "Capturing locally" : "Local session"}
+                  {capturing ? tr("Capturing locally") : tr("Local session")}
                 </span>
               </div>
             </section>
             <div
               role="separator"
-              aria-label={compact ? "调整列表和详情的高度" : "调整详情面板宽度"}
+              aria-label={compact ? tr("调整列表和详情的高度") : tr("调整详情面板宽度")}
               aria-orientation={compact ? "horizontal" : "vertical"}
               aria-valuenow={compact ? Math.round(trafficSplit * 100) : inspectorWidth}
               aria-valuemin={compact ? 0 : 340}
@@ -997,8 +1005,8 @@ function App() {
       {toast ? (
         <div className="toast" role="status">
           <CircleHelp size={16} />
-          <span>{toast}</span>
-          <button aria-label="关闭提示" onClick={() => setToast("")}>
+          <span>{diagnostic(toast)}</span>
+          <button aria-label={tr("关闭提示")} onClick={() => setToast("")}>
             <X size={14} />
           </button>
         </div>
@@ -1044,27 +1052,32 @@ function Settings({
       }}
     >
       <div className="modal-top">
-        <span>WORKSPACE SETTINGS</span>
-        <button aria-label="关闭设置" onClick={onClose}>
+        <span>{tr("WORKSPACE SETTINGS")}</span>
+        <button aria-label={tr("关闭设置")} onClick={onClose}>
           <X size={18} />
         </button>
       </div>
-      <h2>Make yourself at home.</h2>
-      <p className="settings-description">网络接管方式、Codex、CA 证书、界面与本地数据。</p>
+      <h2>{tr("Make yourself at home.")}</h2>
+      <p className="settings-description">{tr("网络接管方式、Codex、CA 证书、界面与本地数据。")}</p>
+      <label className="setting-row">
+        <div><strong>{tr("语言")}</strong><span>{tr("界面语言会自动保存，下次启动继续使用。")}</span></div>
+        <select aria-label={tr("语言")} value={getLocale()} onChange={event => setLocale(event.target.value === "zh-CN" ? "zh-CN" : "en")}>
+          <option value="en">English</option><option value="zh-CN">简体中文</option>
+        </select>
+      </label>
       <div className="setting-row">
         <div>
-          <strong>CA Certificate</strong>
-          <span>{certificate?.trusted ? "当前 CA 已信任，可用于 HTTPS 抓包" : certificate?.exists ? "当前 CA 尚未信任" : "配置 HTTPS 抓包所需的 CA 证书"}</span>
+          <strong>{tr("CA Certificate")}</strong>
+          <span>{certificate?.trusted ? tr("当前 CA 已信任，可用于 HTTPS 抓包") : certificate?.exists ? tr("当前 CA 尚未信任") : tr("配置 HTTPS 抓包所需的 CA 证书")}</span>
         </div>
         <button className="secondary" onClick={onOpenCertificate}>
-          <ShieldCheck size={15} /> 管理证书
-        </button>
+          <ShieldCheck size={15} />  {tr("管理证书")}</button>
       </div>
       <CodexConnection />
       <label className="setting-row">
         <div>
-          <strong>System proxy</strong>
-          <span>开启抓包时接管遵循系统代理的应用</span>
+          <strong>{tr("System proxy")}</strong>
+          <span>{tr("开启抓包时接管遵循系统代理的应用")}</span>
         </div>
         <input
           type="checkbox"
@@ -1075,13 +1088,11 @@ function Settings({
         />
       </label>
       <div className="setting-note">
-        关闭后使用手动代理：<code>{state.address}</code>。忽略系统代理的应用、非
-        HTTP 协议及证书固定暂不支持。系统模式会自动串联原有 HTTP/HTTPS 代理。
-      </div>
+        {tr("关闭后使用手动代理：")}<code>{state.address}</code>{tr("。忽略系统代理的应用、非 HTTP 协议及证书固定暂不支持。系统模式会自动串联原有 HTTP/HTTPS 代理。")}</div>
       <label className="setting-row">
         <div>
-          <strong>Dark appearance</strong>
-          <span>为深夜调试准备的深色界面</span>
+          <strong>{tr("Dark appearance")}</strong>
+          <span>{tr("为深夜调试准备的深色界面")}</span>
         </div>
         <input
           type="checkbox"
@@ -1092,34 +1103,33 @@ function Settings({
       </label>
       <div className="setting-row">
         <div>
-          <strong>Capture limits</strong>
-          <span>1 MiB / body · 3,000 requests · 256 MiB on disk</span>
+          <strong>{tr("Capture limits")}</strong>
+          <span>{tr("请求 / 普通响应 1 MiB · HTML 响应 8 MiB · 3,000 条 · 正文 256 MiB")}</span>
         </div>
         <HardDrive size={17} />
       </div>
       <div className="setting-note">
-        优先转发网络。容量不足时跳过抓包副本；旧请求自动淘汰。HAR
-        和正文导出均受预览上限约束。SSE 持续采集正文前缀，WebSocket 首版仅透传。
-      </div>
+        {tr("所有正文计入磁盘预算，解压也有上限。队列繁忙时停止保存当前正文，网络继续转发；旧请求自动淘汰。HAR 和正文导出均受预览上限约束。SSE 持续采集正文前缀，WebSocket 首版仅透传。")}</div>
       <div className="setting-row">
         <div>
-          <strong>Network recovery</strong>
-          <span>恢复启动抓包前保存的系统代理配置</span>
+          <strong>{tr("Network recovery")}</strong>
+          <span>{tr("恢复启动抓包前保存的系统代理配置")}</span>
         </div>
         <button
           className="secondary"
           onClick={() =>
             api
               .RecoverNetwork()
-              .then(() => notify("系统代理配置已恢复"))
+              .then(() => notify(tr("系统代理配置已恢复")))
               .catch((e) => notify(errorText(e)))
           }
         >
-          恢复网络
-        </button>
+          {tr("恢复网络")}</button>
       </div>
+      <div className="setting-note">
+        {tr("流量保存在本机。HAR、cURL 和正文可能包含 Cookie、令牌和个人信息，分享前请检查并脱敏。 连接 AI 客户端后，工具返回的内容可能发送至模型服务；常见字段脱敏不保证所有正文安全。")}</div>
       <div className="settings-storage">
-        <span>LOCAL DATA DIRECTORY</span>
+        <span>{tr("LOCAL DATA DIRECTORY")}</span>
         <code>{state.dataDirectory}</code>
       </div>
     </dialog>

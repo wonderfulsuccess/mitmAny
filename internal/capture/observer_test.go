@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -652,7 +653,7 @@ func TestGzipHTMLResponseIsDecodedForPreview(t *testing.T) {
 	}
 }
 
-func TestLargeHTMLIsCapturedAndDecodedInFull(t *testing.T) {
+func TestLargeHTMLForwardingAndCapturedPrefix(t *testing.T) {
 	// Poorly compressible HTML exceeds both the wire capture limit and decoded limit.
 	var html bytes.Buffer
 	html.WriteString("<!doctype html><html><body>\n")
@@ -701,8 +702,15 @@ func TestLargeHTMLIsCapturedAndDecodedInFull(t *testing.T) {
 				if err != nil {
 					return false
 				}
+				raw, err := os.ReadFile(store.bodyPath(d.ID, false))
+				if err != nil || !bytes.HasPrefix(body, raw) || len(raw) > HTMLLimit {
+					return false
+				}
+				if d.Truncated {
+					return d.CaptureNote != ""
+				}
 				decoded, _ := base64.StdEncoding.DecodeString(d.ResponseBody)
-				return !d.Truncated && d.ResponseCaptured == int64(len(body)) && d.ResponseEncoding == "base64" && bytes.Equal(decoded, html.Bytes())
+				return d.ResponseCaptured == int64(len(body)) && d.ResponseEncoding == "base64" && bytes.Equal(decoded, html.Bytes())
 			})
 			// The exception is HTML-specific; other encoded bodies remain bounded.
 			if compressed {
@@ -715,31 +723,26 @@ func TestLargeHTMLIsCapturedAndDecodedInFull(t *testing.T) {
 	}
 }
 
-func TestHTMLDoesNotConsumePreviewBudget(t *testing.T) {
+func TestHTMLConsumesSessionBudget(t *testing.T) {
 	store, err := NewStore(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Exercise accounting beyond 256 MiB without allocating a huge fixture.
 	store.entries["html"] = &Detail{Summary: Summary{ID: "html", ContentType: "text/html"}, ResponseCaptured: MaxDiskBytes + 1}
 	store.order = []string{"html"}
 	store.diskBytes = MaxDiskBytes + 1
 	store.changed = true
-	store.trimLocked()
-	if len(store.order) != 1 {
-		t.Fatal("HTML evicted by byte budget")
-	}
 	store.Flush()
 	reopened, err := NewStore(store.dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(reopened.order) != 1 || reopened.previewBytes != 0 || reopened.diskBytes != MaxDiskBytes+1 {
-		t.Fatal("HTML budget not restored correctly")
+	if len(reopened.order) != 0 || reopened.diskBytes != 0 {
+		t.Fatal("oversized HTML session was not evicted on restore")
 	}
-	reopened.Clear()
-	if reopened.previewBytes != 0 || reopened.diskBytes != 0 {
-		t.Fatal("clear did not reset budget")
+	store.trimLocked()
+	if len(store.order) != 0 || store.diskBytes != 0 {
+		t.Fatal("HTML did not count toward disk budget")
 	}
 }
 
@@ -759,7 +762,7 @@ func TestHARImportRetainsLargeHTML(t *testing.T) {
 		t.Fatal(err)
 	}
 	body, _ := base64.StdEncoding.DecodeString(d.ResponseBody)
-	if string(body) != html || d.Truncated || store.previewBytes != 0 {
+	if string(body) != html || d.Truncated || store.diskBytes != int64(len(html)) {
 		t.Fatal("imported HTML was limited")
 	}
 }

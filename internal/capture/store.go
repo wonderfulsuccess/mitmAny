@@ -36,7 +36,6 @@ type Store struct {
 	revision     uint64
 	epoch        uint64
 	diskBytes    int64
-	previewBytes int64
 	changed      bool
 	generation   uint64
 	lastErr      string
@@ -65,10 +64,6 @@ func NewStore(dir string) (*Store, error) {
 				s.entries[d.ID] = &item
 				s.order = append(s.order, d.ID)
 				s.diskBytes += d.RequestCaptured + d.ResponseCaptured
-				s.previewBytes += d.RequestCaptured
-				if !isHTML(d.ContentType) {
-					s.previewBytes += d.ResponseCaptured
-				}
 			}
 		}
 	}
@@ -144,7 +139,7 @@ func (s *Store) append(st *flowState, request bool, data []byte) {
 	defer s.mu.Unlock()
 	if err != nil {
 		s.lastErr = err.Error()
-		st.lost.Store(true)
+		st.truncate("Body storage failed")
 	}
 	if d := s.entries[id]; d != nil {
 		if request {
@@ -154,9 +149,6 @@ func (s *Store) append(st *flowState, request bool, data []byte) {
 		}
 	}
 	s.diskBytes += int64(n)
-	if d := s.entries[id]; d != nil && (request || !isHTML(d.ContentType)) {
-		s.previewBytes += int64(n)
-	}
 	if n > 0 {
 		s.changed = true
 		s.generation++
@@ -164,17 +156,12 @@ func (s *Store) append(st *flowState, request bool, data []byte) {
 	s.trimLocked()
 }
 func (s *Store) trimLocked() {
-	// HTML bodies are not subject to the preview byte budget. Count-based
-	// session retention still applies, and other bodies retain their byte budget.
-	for len(s.order) > MaxEntries || s.previewBytes > MaxDiskBytes {
+	// Every body counts toward the session budget, including HTML.
+	for len(s.order) > MaxEntries || s.diskBytes > MaxDiskBytes {
 		id := s.order[0]
 		s.order = s.order[1:]
 		if d := s.entries[id]; d != nil {
 			s.diskBytes -= d.RequestCaptured + d.ResponseCaptured
-			s.previewBytes -= d.RequestCaptured
-			if !isHTML(d.ContentType) {
-				s.previewBytes -= d.ResponseCaptured
-			}
 		}
 		delete(s.entries, id)
 		s.revision++
@@ -219,17 +206,46 @@ func (s *Store) Detail(id string) (Detail, error) {
 	copy := *d
 	s.mu.RUnlock()
 	// IDs come from the indexed store, never directly from a path supplied by the UI.
-	req, _ := os.ReadFile(s.bodyPath(copy.ID, true))
-	res, _ := os.ReadFile(s.bodyPath(copy.ID, false))
+	req, reqLimited, err := readBodyPrefix(s.bodyPath(copy.ID, true), PreviewLimit)
+	if err != nil && copy.RequestCaptured > 0 {
+		return Detail{}, err
+	}
+	res, resLimited, err := readBodyPrefix(s.bodyPath(copy.ID, false), responseLimit(copy.ContentType))
+	if err != nil && copy.ResponseCaptured > 0 {
+		return Detail{}, err
+	}
+	copy.Truncated = copy.Truncated || reqLimited || resLimited
+	if reqLimited || resLimited {
+		copy.CaptureNote = "Stored body exceeds current read limit"
+	}
 	copy.RequestBody, copy.RequestEncoding = bodyForUI(req, copy.RequestHeaders.Get("Content-Encoding"))
 	copy.ResponseBody, copy.ResponseEncoding = bodyForUI(res, copy.ResponseHeaders.Get("Content-Encoding"), isHTML(copy.ContentType))
 	return copy, nil
 }
-func bodyForUI(data []byte, encoding string, unlimitedHTML ...bool) (string, string) {
-	unlimited := len(unlimitedHTML) > 0 && unlimitedHTML[0]
+
+// Bound legacy body files as well as newly captured data.
+func readBodyPrefix(path string, limit int) ([]byte, bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, false, err
+	}
+	defer f.Close()
+	data, err := io.ReadAll(io.LimitReader(f, int64(limit)+1))
+	limited := len(data) > limit
+	if limited {
+		data = data[:limit]
+	}
+	return data, limited, err
+}
+
+func bodyForUI(data []byte, encoding string, html ...bool) (string, string) {
+	limit := PreviewLimit
+	if len(html) > 0 && html[0] {
+		limit = HTMLLimit
+	}
 	original := data
 	codings := strings.Split(strings.ToLower(encoding), ",")
-	// Decode in reverse application order. HTML responses have no decoded size cap.
+	// Decode in reverse application order, bounding every layer.
 	if len(codings) > 4 {
 		return base64.StdEncoding.EncodeToString(original), "compressed"
 	}
@@ -263,9 +279,7 @@ func bodyForUI(data []byte, encoding string, unlimitedHTML ...bool) (string, str
 		case "zstd":
 			var reader *zstd.Decoder
 			options := []zstd.DOption{zstd.WithDecoderConcurrency(1), zstd.WithDecoderLowmem(true)}
-			if !unlimited {
-				options = append(options, zstd.WithDecoderMaxMemory(8<<20), zstd.WithDecoderMaxWindow(8<<20))
-			}
+			options = append(options, zstd.WithDecoderMaxMemory(16<<20), zstd.WithDecoderMaxWindow(8<<20))
 			reader, err = zstd.NewReader(bytes.NewReader(data), options...)
 			if err == nil {
 				r = reader
@@ -277,15 +291,12 @@ func bodyForUI(data []byte, encoding string, unlimitedHTML ...bool) (string, str
 		if err != nil {
 			return base64.StdEncoding.EncodeToString(original), "compressed"
 		}
-		source := r
-		if !unlimited {
-			source = io.LimitReader(r, PreviewLimit+1)
-		}
+		source := io.LimitReader(r, int64(limit)+1)
 		decoded, readErr := io.ReadAll(source)
 		if closeReader != nil {
 			closeReader()
 		}
-		if readErr != nil || (!unlimited && len(decoded) > PreviewLimit) {
+		if readErr != nil || len(decoded) > limit {
 			return base64.StdEncoding.EncodeToString(original), "compressed"
 		}
 		data = decoded
@@ -303,7 +314,6 @@ func (s *Store) Clear() {
 	s.entries = map[string]*Detail{}
 	s.order = nil
 	s.diskBytes = 0
-	s.previewBytes = 0
 	s.epoch = s.epoch + s.revision + 1
 	s.revision = 0
 	s.removals = nil

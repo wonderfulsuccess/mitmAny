@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>mitmAny · Synthetic demo</title></head>
+<body><div id="root"></div><script type="module">
+// Public, synthetic UI fixture. Every native operation below is mocked.
+const empty = new URLSearchParams(location.search).has('empty');
+const state = {running:!empty,systemProxy:!empty,recording:true,address:'127.0.0.1:9080',platform:'darwin',recoveryPending:false,error:'',storageError:'',dataDirectory:'Synthetic demo · no captured user data'};
+const cert = {exists:true,trusted:!empty,valid:true,subject:'mitmAny Local CA',fingerprint:'SYNTHETIC-DEMO',expires:'2030-01-01',path:'Synthetic demo'};
+const phone = {enabled:false,serial:'DEMO-DEVICE',listening:false,address:'127.0.0.1:9081',pending:[]};
+const codex = {skillInstalled:false,mcpRegistered:false,skillDisabled:false,ready:false,serviceRunning:true,lastActivity:0,skillPath:'~/.agents/skills/mitmany-network-analysis',configPath:'~/.codex/config.toml',error:''};
+const base = {scheme:'https',protocol:'HTTP/2.0',status:200,contentType:'application/json',complete:true,truncated:false,revision:1,requestSize:0,requestCaptured:0,requestHeaders:{Accept:['application/json']},responseHeaders:{'Content-Type':['application/json'],'Cache-Control':['no-store']},requestBody:'',requestEncoding:'base64',responseEncoding:'base64'};
+const rows = [
+ ['GET','api.example.test','/v1/projects',200,{projects:[{id:'demo-01',name:'Open source launch',status:'active'},{id:'demo-02',name:'Android inspection',status:'active'}],pagination:{page:1,next_page:2,total:24}},132],
+ ['GET','api.example.test','/v1/projects?page=2',200,{projects:[{id:'demo-03',name:'Protocol notes'}],pagination:{page:2,next_page:null,total:24}},89],
+ ['POST','api.example.test','/v1/session',201,{user:{id:'demo-user',name:'Example developer'},authenticated:true},216],
+ ['GET','cdn.example.test','/assets/app.css',200,{demo:'stylesheet request'},34],
+ ['GET','api.example.test','/v1/notifications',200,{items:[],unread:0},71],
+ ['GET','api.example.test','/v1/missing',404,{error:'Example resource not found'},48],
+ ['GET','docs.example.test','/guide',200,{title:'Getting started'},110],
+ ['GET','api.example.test','/v1/health',200,{status:'ok'},12]
+];
+let flows = empty ? [] : rows.map(([method,host,path,status,body,duration],i)=>{
+ const text=JSON.stringify(body,null,2);
+ return {...base,id:'demo-'+i,method,host,domain:host,rootDomain:'example.test',path,url:'https://'+host+path,status,started:Date.now()-(rows.length-i)*1200,duration,ttfb:duration/2,responseSize:text.length,responseCaptured:text.length,responseBody:btoa(text)};
+});
+let revision=1;
+window.go={main:{App:{
+ GetState:async()=>({...state}), GetCertificateStatus:async()=>({...cert}), GetAndroidState:async()=>({...phone}),
+ GetCodexStatus:async()=>({...codex}), ConnectCodex:async()=>Object.assign(codex,{ready:true,skillInstalled:true,mcpRegistered:true}),
+ AndroidDevices:async()=>[{serial:'DEMO-DEVICE',state:'device',model:'Demo Android',product:'Synthetic',name:'Demo Android'}],
+ SetAndroidEnabled:async(serial,enabled)=>Object.assign(phone,{enabled,listening:enabled,serial}),
+ InstallAndroidCertificate:async()=> 'Synthetic demo: no certificate was installed.',
+ GetFlows:async cursor=>({flows:cursor===revision?[]:[...flows],cursor:revision,reset:!cursor,total:flows.length,bytes:flows.reduce((n,f)=>n+f.responseSize,0),dropped:0}),
+ GetFlow:async id=>flows.find(f=>f.id===id),
+ StartCapture:async system=>Object.assign(state,{running:true,systemProxy:system}),
+ StopCapture:async()=>Object.assign(state,{running:false,systemProxy:false}),
+ RecoverNetwork:async()=>Object.assign(state,{running:false,systemProxy:false}),
+ SetRecording:async recording=>Object.assign(state,{recording}),
+ ClearFlows:async()=>{flows=[];revision++;},
+ InstallCertificate:async()=>Object.assign(cert,{trusted:true}), UninstallCertificate:async()=>Object.assign(cert,{trusted:false}),
+ ExportCertificate:async()=>{},OpenCertificateInKeychain:async()=>{},SaveBody:async()=>{},ExportHAR:async()=>{},ImportHAR:async()=>0,WindowAction:async()=>{}
+}}};
+await import('/src/main.tsx');
+</script></body></html>

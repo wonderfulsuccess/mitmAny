@@ -1,3 +1,4 @@
+import { tr, diagnostic, getLocale } from "./i18n";
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
@@ -138,18 +139,18 @@ function BodyContent({ detail, request, notify, responseSearch, onResponseSearch
     return (
       <div className="body-empty">
         <FileCode2 size={30} />
-        <h3>{missing ? "正文副本不可用" : waiting ? "等待正文…" : request ? "此请求没有正文" : "此响应没有正文"}</h3>
+        <h3>{missing ? tr("正文副本不可用") : waiting ? tr("等待正文…") : request ? tr("此请求没有正文") : tr("此响应没有正文")}</h3>
         <p>{missing
-          ? "已检测到正文传输，但未保存到正文副本，可能因采集繁忙或存储失败而缺失。"
-          : waiting ? "收到数据后会自动显示。"
-          : request ? "URL 参数显示在上方；只有实际发送了 Body 的请求才会在这里显示正文。"
-          : detail.method === "HEAD" || detail.status === 204 || detail.status === 304 ? "此类响应不包含正文。" : "服务器未返回正文。"}</p>
+          ? tr("已检测到正文传输，但未保存到正文副本，可能因采集繁忙或存储失败而缺失。")
+          : waiting ? tr("收到数据后会自动显示。")
+          : request ? tr("URL 参数显示在上方；只有实际发送了 Body 的请求才会在这里显示正文。")
+          : detail.method === "HEAD" || detail.status === 204 || detail.status === 304 ? tr("此类响应不包含正文。") : tr("服务器未返回正文。")}</p>
       </div>
     );
   }
   return (
     <div ref={bodyView} className={`body-view ${expanded ? "response-expanded" : ""}`}
-      role={expanded ? "dialog" : undefined} aria-modal={expanded || undefined} aria-label={expanded ? "Response 大屏浏览" : undefined}
+      role={expanded ? "dialog" : undefined} aria-modal={expanded || undefined} aria-label={expanded ? tr("Response 大屏浏览") : undefined}
       tabIndex={expanded ? -1 : undefined} onKeyDown={event => { if (expanded) event.stopPropagation(); }}>
       <div className="body-toolbar">
         {expanded ? <strong className="response-title" title={detail.url}>Response · {detail.path.split("?")[0]}</strong> : null}
@@ -160,60 +161,60 @@ function BodyContent({ detail, request, notify, responseSearch, onResponseSearch
               className={mode === v ? "active" : ""}
               onClick={() => setMode(v)}
             >
-              {v}
+              {tr(v)}
             </button>
           ))}
         </div>
-        <span title={decoded ? `已解压 ${contentEncoding}，显示解压后的正文` : undefined}>{decoded ? `已解压 ${contentEncoding} · ` : ""}{size(bytes.length)}</span>
+        <span title={decoded ? tr("已解压 {p0}，显示解压后的正文", {p0: contentEncoding}) : undefined}>{decoded ? tr("已解压 {p0} · ", {p0: contentEncoding}) : ""}{size(bytes.length)}</span>
         <button
-          title="复制正文"
-          aria-label="复制正文"
+          title={tr("复制正文")}
+          aria-label={tr("复制正文")}
           disabled={!isText || encoding !== "base64"}
           onClick={() =>
             navigator.clipboard
               .writeText(text)
-              .then(() => notify("正文已复制"))
-              .catch(() => notify("无法访问剪贴板"))
+              .then(() => notify(tr("正文已复制")))
+              .catch(() => notify(tr("无法访问剪贴板")))
           }
         >
           <Copy size={14} />
         </button>
         <button
-          title="下载正文（自动选择文件格式）"
-          aria-label="下载正文（自动选择文件格式）"
+          title={tr("下载正文（自动选择文件格式）")}
+          aria-label={tr("下载正文（自动选择文件格式）")}
           onClick={() =>
-            api.SaveBody(detail.id, request).catch((e) => notify(String(e)))
+            api.SaveBody(detail.id, request).catch((e) => notify(diagnostic(String(e))))
           }
         >
           <Download size={14} />
         </button>
-        {!request ? <button ref={expandButton} title={expanded ? "退出大屏浏览（Esc）" : "大屏浏览 Response"} aria-label={expanded ? "退出大屏浏览" : "大屏浏览 Response"} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>
+        {!request ? <button ref={expandButton} title={expanded ? tr("退出大屏浏览（Esc）") : tr("大屏浏览 Response")} aria-label={expanded ? tr("退出大屏浏览") : tr("大屏浏览 Response")} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>
           {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
         </button> : null}
       </div>
       {!request && isText && encoding === "base64" ? <div className="body-search">
         <Search size={13} />
-        <input ref={searchInput} aria-label="搜索响应正文" placeholder="搜索 Response…" value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => {
+        <input ref={searchInput} aria-label={tr("搜索响应正文")} placeholder={tr("搜索 Response…")} value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => {
           if (event.key === "Enter") { event.preventDefault(); moveMatch(event.shiftKey ? -1 : 1); }
           if (event.key === "Escape") { event.stopPropagation(); setQuery(""); }
         }} />
-        <span role="status" aria-live="polite">{query !== deferredQuery ? "搜索中…" : query ? `${matches.length ? activeMatch + 1 : 0} / ${matches.length}` : ""}</span>
-        <button aria-label="上一个匹配" title="上一个（Shift+Enter）" disabled={!matches.length} onClick={() => moveMatch(-1)}><ArrowUp size={13} /></button>
-        <button aria-label="下一个匹配" title="下一个（Enter）" disabled={!matches.length} onClick={() => moveMatch(1)}><ArrowDown size={13} /></button>
-        {query ? <button aria-label="清除搜索" onClick={() => { setQuery(""); searchInput.current?.focus(); }}><X size={13} /></button> : null}
+        <span role="status" aria-live="polite">{query !== deferredQuery ? tr("搜索中…") : query ? `${matches.length ? activeMatch + 1 : 0} / ${matches.length}` : ""}</span>
+        <button aria-label={tr("上一个匹配")} title={tr("上一个（Shift+Enter）")} disabled={!matches.length} onClick={() => moveMatch(-1)}><ArrowUp size={13} /></button>
+        <button aria-label={tr("下一个匹配")} title={tr("下一个（Enter）")} disabled={!matches.length} onClick={() => moveMatch(1)}><ArrowDown size={13} /></button>
+        {query ? <button aria-label={tr("清除搜索")} onClick={() => { setQuery(""); searchInput.current?.focus(); }}><X size={13} /></button> : null}
       </div> : null}
       {encoding === "compressed" ? (
         <div className="notice">
-          { /html/i.test(mime) ? "压缩正文不完整或编码暂不支持，可保存已捕获的原始字节。" : "压缩正文不完整、解压后超过 1 MiB 或编码暂不支持，可保存已捕获的原始字节。" }
+          { /html/i.test(mime) ? tr("压缩正文不完整、解压后超过 8 MiB 或编码暂不支持，可保存已捕获的原始字节。") : tr("压缩正文不完整、解压后超过 1 MiB 或编码暂不支持，可保存已捕获的原始字节。") }
         </div>
       ) : isImage && mode === "Pretty" ? (
         <div className="image-preview">
           {imageFailed ? (
-            <p>图片副本不完整或格式不受支持，可保存已捕获的字节。</p>
+            <p>{tr("图片副本不完整或格式不受支持，可保存已捕获的字节。")}</p>
           ) : (
             <img
               src={objectURL}
-              alt="Captured response"
+              alt={tr("Captured response")}
               onError={() => setImageFailed(true)}
             />
           )}
@@ -222,7 +223,7 @@ function BodyContent({ detail, request, notify, responseSearch, onResponseSearch
       ) : mime.includes("pdf") && mode === "Pretty" && objectURL ? (
         <iframe
           sandbox=""
-          title="PDF preview"
+          title={tr("PDF preview")}
           src={objectURL}
           className="pdf-preview"
         />
@@ -231,18 +232,17 @@ function BodyContent({ detail, request, notify, responseSearch, onResponseSearch
       ) : (
         <div className="body-empty">
           <FileCode2 size={30} />
-          <h3>Binary response</h3>
+          <h3>{tr("Binary response")}</h3>
           <p>
             {mime} · {size(bytes.length)}
           </p>
           <button
             className="secondary"
             onClick={() =>
-              api.SaveBody(detail.id, request).catch((e) => notify(String(e)))
+              api.SaveBody(detail.id, request).catch((e) => notify(diagnostic(String(e))))
             }
           >
-            保存正文
-          </button>
+            {tr("保存正文")}</button>
         </div>
       )}
     </div>
@@ -254,8 +254,8 @@ function Body(props: BodyProps) {
   try { params = [...new URL(props.detail.url).searchParams.entries()]; } catch { /* malformed capture URL */ }
   return <div className="request-body-panel">
     <details open className="request-query-params">
-      <summary>URL 参数 <span>{params.length}</span></summary>
-      {params.length ? <dl>{params.map(([name, value], index) => <div key={index}><dt>{name}</dt><dd>{value || "（空值）"}</dd></div>)}</dl> : <p>此 URL 没有查询参数。</p>}
+      <summary>{tr("URL 参数")} <span>{params.length}</span></summary>
+      {params.length ? <dl>{params.map(([name, value], index) => <div key={index}><dt>{name}</dt><dd>{value || tr("（空值）")}</dd></div>)}</dl> : <p>{tr("此 URL 没有查询参数。")}</p>}
     </details>
     <BodyContent {...props} />
   </div>;
@@ -283,22 +283,19 @@ export default function Inspector({
         <div className="inspect-symbol">
           <FileCode2 size={28} />
         </div>
-        <h3>{loading ? "Loading request…" : "A closer look."}</h3>
-        <p>选择一条请求，查看每一个细节。</p>
+        <h3>{loading ? tr("Loading request…") : tr("A closer look.")}</h3>
+        <p>{tr("选择一条请求，查看每一个细节。")}</p>
         <div className="inspect-hints">
           <span>
-            <LockKeyhole size={14} /> HTTPS inspection
-          </span>
+            <LockKeyhole size={14} />  {tr("HTTPS inspection")}</span>
           <span>
-            <ArrowDown size={14} /> Streaming responses
-          </span>
+            <ArrowDown size={14} />  {tr("Streaming responses")}</span>
           <span>
-            <FileCode2 size={14} /> Rich body previews
-          </span>
+            <FileCode2 size={14} />  {tr("Rich body previews")}</span>
         </div>
         <kbd>↑</kbd>
         <kbd>↓</kbd>
-        <small>浏览请求</small>
+        <small>{tr("浏览请求")}</small>
       </aside>
     );
   const copy = async (text: string) => {
@@ -307,7 +304,7 @@ export default function Inspector({
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
     } catch {
-      notify("无法访问剪贴板");
+      notify(tr("无法访问剪贴板"));
     }
   };
   const params = (() => {
@@ -331,8 +328,8 @@ export default function Inspector({
         <span className="detail-path" title={detail.path}>
           {detail.path.split("?")[0]}
         </span>
-        <button aria-label={compact ? "返回请求列表" : "关闭详情"} title={compact ? "返回请求列表" : "关闭详情"} onClick={onClose}>
-          {compact ? <><ArrowLeft size={14} /> 返回列表</> : <X size={16} />}
+        <button aria-label={compact ? tr("返回请求列表") : tr("关闭详情")} title={compact ? tr("返回请求列表") : tr("关闭详情")} onClick={onClose}>
+          {compact ? <><ArrowLeft size={14} />  {tr("返回列表")}</> : <X size={16} />}
         </button>
       </div>
       <div className="url-line">
@@ -343,8 +340,8 @@ export default function Inspector({
         )}
         <span title={detail.url}>{detail.url}</span>
         <button
-          title="复制 URL"
-          aria-label="复制 URL"
+          title={tr("复制 URL")}
+          aria-label={tr("复制 URL")}
           onClick={() => copy(detail.url)}
         >
           {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -359,15 +356,14 @@ export default function Inspector({
             key={t}
             onClick={() => setTab(t)}
           >
-            {t}
+            {tr(t)}
           </button>
         ))}
       </div>
-      {detail.method === "CONNECT" && !detail.error ? <div className="notice">此连接仅通过 HTTPS 隧道转发，未解密内部请求或正文。请检查 CA 信任与 HTTPS 抓包设置。</div> : null}
+      {detail.method === "CONNECT" && !detail.error ? <div className="notice">{tr("此连接仅通过 HTTPS 隧道转发，未解密内部请求或正文。请检查 CA 信任与 HTTPS 抓包设置。")}</div> : null}
       {detail.truncated ? (
         <div className="notice">
-          正文副本不完整，可能因采集或存储失败而缺失；非 HTML 正文保留最多 1 MiB。
-        </div>
+          {tr("正文副本不完整：")}{diagnostic(detail.captureNote || tr("采集达到上限、队列繁忙或存储失败"))}{tr("。请求与普通响应最多 1 MiB，HTML 响应最多 8 MiB；网络转发继续。")}</div>
       ) : null}
       <div className={`detail-content ${tab === "Request" || tab === "Response" ? "body-content" : ""}`}>
         {tab === "Overview" ? (
@@ -381,25 +377,25 @@ export default function Inspector({
                 }
               >
                 <span />
-                {detail.error ? "Failed" : detail.status || "Pending"}
+                {detail.error ? tr("Failed") : detail.status || tr("Pending")}
               </span>
-              <span>{detail.complete ? "Completed" : "In progress"}</span>
+              <span>{detail.complete ? tr("Completed") : tr("In progress")}</span>
             </div>
-            <h4>GENERAL</h4>
+            <h4>{tr("GENERAL")}</h4>
             <dl className="properties">
-              <dt>Request URL</dt>
+              <dt>{tr("Request URL")}</dt>
               <dd className="break">{detail.url}</dd>
-              <dt>Request method</dt>
+              <dt>{tr("Request method")}</dt>
               <dd>{detail.method}</dd>
-              <dt>Status code</dt>
-              <dd>{detail.status || "Waiting"}</dd>
-              <dt>Protocol</dt>
+              <dt>{tr("Status code")}</dt>
+              <dd>{detail.status || tr("Waiting")}</dd>
+              <dt>{tr("Protocol")}</dt>
               <dd>{detail.protocol}</dd>
-              <dt>Content type</dt>
+              <dt>{tr("Content type")}</dt>
               <dd>{detail.contentType || "—"}</dd>
-              <dt>Started at</dt>
+              <dt>{tr("Started at")}</dt>
               <dd>
-                {new Date(detail.started).toLocaleTimeString([], {
+                {new Date(detail.started).toLocaleTimeString(getLocale(), {
                   hour12: false,
                   hour: "2-digit",
                   minute: "2-digit",
@@ -408,25 +404,25 @@ export default function Inspector({
                 })}
               </dd>
             </dl>
-            <h4>TRANSFER</h4>
+            <h4>{tr("TRANSFER")}</h4>
             <div className="transfer-cards">
               <div>
                 <ArrowUp size={15} />
                 <strong>{size(detail.requestSize)}</strong>
-                <span>Request body</span>
+                <span>{tr("Request body")}</span>
               </div>
               <div>
                 <ArrowDown size={15} />
                 <strong>{size(detail.responseSize)}</strong>
-                <span>Response body</span>
+                <span>{tr("Response body")}</span>
               </div>
             </div>
             {detail.error ? (
-              <div className="error-box">{detail.error}</div>
+              <div className="error-box">{diagnostic(detail.error)}</div>
             ) : null}
             {params.length ? (
               <>
-                <h4>QUERY PARAMETERS</h4>
+                <h4>{tr("QUERY PARAMETERS")}</h4>
                 {params.map(([k, v], i) => (
                   <div className="header-pair" key={i}>
                     <span>{k}</span>
@@ -439,15 +435,15 @@ export default function Inspector({
         ) : tab === "Headers" ? (
           <>
             <HeaderGroup
-              title="Request headers"
+              title={tr("Request headers")}
               headers={detail.requestHeaders}
             />
             <HeaderGroup
-              title="Response headers"
+              title={tr("Response headers")}
               headers={detail.responseHeaders}
             />
-            {Object.keys(detail.requestTrailers ?? {}).length ? <HeaderGroup title="Request trailers" headers={detail.requestTrailers!} /> : null}
-            {Object.keys(detail.responseTrailers ?? {}).length ? <HeaderGroup title="Response trailers" headers={detail.responseTrailers!} /> : null}
+            {Object.keys(detail.requestTrailers ?? {}).length ? <HeaderGroup title={tr("Request trailers")} headers={detail.requestTrailers!} /> : null}
+            {Object.keys(detail.responseTrailers ?? {}).length ? <HeaderGroup title={tr("Response trailers")} headers={detail.responseTrailers!} /> : null}
           </>
         ) : tab === "Request" || tab === "Response" ? (
           <Body
@@ -460,10 +456,10 @@ export default function Inspector({
           />
         ) : (
           <div className="timing-panel">
-            <h4>REQUEST TIMELINE</h4>
-            <p>从代理接收请求头开始计算。</p>
+            <h4>{tr("REQUEST TIMELINE")}</h4>
+            <p>{tr("从代理接收请求头开始计算。")}</p>
             <div className="timing-row">
-              <span>Waiting for response</span>
+              <span>{tr("Waiting for response")}</span>
               <strong>{detail.ttfb.toFixed(1)} ms</strong>
             </div>
             <div className="timing-track">
@@ -474,7 +470,7 @@ export default function Inspector({
               />
             </div>
             <div className="timing-row">
-              <span>Content download</span>
+              <span>{tr("Content download")}</span>
               <strong>
                 {Math.max(0, detail.duration - detail.ttfb).toFixed(1)} ms
               </strong>
@@ -487,16 +483,16 @@ export default function Inspector({
               />
             </div>
             <div className="timing-total">
-              <span>Total duration</span>
+              <span>{tr("Total duration")}</span>
               <strong>{detail.duration.toFixed(1)} ms</strong>
             </div>
-            <p>DNS、TCP 和 TLS 分阶段耗时暂未单独采集。</p>
+            <p>{tr("DNS、TCP 和 TLS 分阶段耗时暂未单独采集。")}</p>
           </div>
         )}
       </div>
       <div className="inspector-footer">
         <span className="dot" />{" "}
-        {detail.complete ? "Captured locally" : "Streaming"}
+        {detail.complete ? tr("Captured locally") : tr("Streaming")}
         <span>{detail.protocol}</span>
       </div>
     </aside>

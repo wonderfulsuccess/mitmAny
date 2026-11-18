@@ -13,6 +13,15 @@ import (
 )
 
 const PreviewLimit = 1024 * 1024
+const HTMLLimit = 8 * PreviewLimit
+
+func responseLimit(contentType string) int {
+	if isHTML(contentType) {
+		return HTMLLimit
+	}
+	return PreviewLimit
+}
+
 const chunkSize = 32 * 1024
 
 func isHTML(contentType string) bool {
@@ -27,6 +36,16 @@ type flowState struct {
 	responseBytes atomic.Int64
 	lost          atomic.Bool
 }
+
+func (s *flowState) truncate(reason string) {
+	s.lost.Store(true)
+	s.mu.Lock()
+	if s.detail.CaptureNote == "" {
+		s.detail.CaptureNote = reason
+	}
+	s.mu.Unlock()
+}
+
 type event struct {
 	work    func()
 	state   *flowState
@@ -36,8 +55,7 @@ type event struct {
 	ack     chan struct{}
 }
 
-// Ordinary captures copy a bounded prefix without waiting for a queue slot.
-// HTML captures retain the full response, applying bounded queue backpressure.
+// Capture a bounded prefix without waiting for disk or a queue slot, including HTML.
 type Observer struct {
 	proxy.BaseAddon
 	store     *Store
@@ -155,7 +173,7 @@ func (o *Observer) wrap(f *proxy.Flow, r io.Reader, request bool) io.Reader {
 	}
 	tap := &tapReader{Reader: r, observer: o, state: value.(*flowState), request: request}
 	if !request && f.Response != nil {
-		tap.unlimited = isHTML(f.Response.Header.Get("Content-Type"))
+		tap.limit = responseLimit(f.Response.Header.Get("Content-Type"))
 	}
 	if request && f.Request.Raw() != nil {
 		tap.trailers = func() http.Header { return f.Request.Raw().Trailer }
@@ -173,7 +191,7 @@ type tapReader struct {
 	request        bool
 	seen           int64
 	previewStopped bool
-	unlimited      bool
+	limit          int
 	trailers       func() http.Header
 }
 
@@ -201,61 +219,42 @@ func (t *tapReader) Read(p []byte) (int, error) {
 	if t.previewStopped {
 		return n, err
 	}
-	remaining := int64(PreviewLimit) - t.seen
-	if t.unlimited {
-		remaining = int64(n)
+	limit := t.limit
+	if limit == 0 {
+		limit = PreviewLimit
 	}
+	remaining := int64(limit) - t.seen
 	t.seen += int64(n)
 	if remaining <= 0 {
 		t.previewStopped = true
-		t.state.lost.Store(true)
+		t.state.truncate("Capture size limit reached")
 		return n, err
 	}
 	count := n
 	if int64(count) > remaining {
 		count = int(remaining)
-		t.state.lost.Store(true)
+		t.state.truncate("Capture size limit reached")
 	}
 	for offset := 0; offset < count; {
 		var block []byte
-		if t.unlimited {
-			// Apply bounded backpressure for HTML instead of dropping body chunks.
-			select {
-			case block = <-t.observer.blocks:
-			case <-t.observer.stop:
-				t.state.lost.Store(true)
-				return n, err
-			}
-		} else {
-			select {
-			case block = <-t.observer.blocks:
-			default:
-				t.previewStopped = true
-				t.state.lost.Store(true)
-				t.observer.dropped.Add(1)
-				return n, err
-			}
+		select {
+		case block = <-t.observer.blocks:
+		default:
+			t.previewStopped = true
+			t.state.truncate("Capture queue full; forwarding continued")
+			t.observer.dropped.Add(1)
+			return n, err
 		}
 		size := min(count-offset, len(block))
 		copy(block, p[offset:offset+size])
-		if t.unlimited {
-			select {
-			case t.observer.queue <- event{state: t.state, kind: 'b', data: block[:size], request: t.request}:
-			case <-t.observer.stop:
-				t.observer.blocks <- block[:chunkSize]
-				t.state.lost.Store(true)
-				return n, err
-			}
-		} else {
-			select {
-			case t.observer.queue <- event{state: t.state, kind: 'b', data: block[:size], request: t.request}:
-			default:
-				t.observer.blocks <- block[:chunkSize]
-				t.previewStopped = true
-				t.state.lost.Store(true)
-				t.observer.dropped.Add(1)
-				return n, err
-			}
+		select {
+		case t.observer.queue <- event{state: t.state, kind: 'b', data: block[:size], request: t.request}:
+		default:
+			t.observer.blocks <- block[:chunkSize]
+			t.previewStopped = true
+			t.state.truncate("Capture queue full; forwarding continued")
+			t.observer.dropped.Add(1)
+			return n, err
 		}
 		offset += size
 	}

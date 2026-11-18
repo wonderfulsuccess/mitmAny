@@ -40,8 +40,8 @@ test('decoded bodies drop stale content encoding, compressed bytes retain it', (
 });
 
 test('missing request bytes and CONNECT cannot silently export an incomplete replay', () => {
-  assert.throws(()=>requestCurl(detail({requestSize:20,requestCaptured:5})), /未完整捕获/);
-  assert.throws(()=>requestCurl(detail({method:'CONNECT'})), /隧道/);
+  assert.throws(()=>requestCurl(detail({requestSize:20,requestCaptured:5})), /not captured completely/);
+  assert.throws(()=>requestCurl(detail({method:'CONNECT'})), /tunnel/);
   // An incomplete response does not stop replay of a fully captured request.
   assert.ok(requestCurl(detail({truncated:true,requestBody:'e30=',requestSize:2,requestCaptured:2})).includes('--data-binary @-'));
 });

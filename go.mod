@@ -51,6 +51,4 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 )
 
-// replace github.com/wailsapp/wails/v2 v2.15.0 => /Users/frankwang/go/pkg/mod
-
 replace github.com/lqqyt2423/go-mitmproxy => ./third_party/go-mitmproxy

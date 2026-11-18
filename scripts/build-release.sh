@@ -26,7 +26,7 @@ setup_node() {
   fi
   if command -v nvm >/dev/null 2>&1; then
     set +u
-    nvm use --silent 22 || fail "nvm 无法切换到 Node.js 22，请先运行 nvm install 22。"
+    nvm use --silent "$(cat "$ROOT/.nvmrc")" || fail "nvm 无法切换到 Node.js 22，请先运行 nvm install 22。"
     set -u
   fi
 }
@@ -66,7 +66,7 @@ rsync -a \
   --exclude '.git/' --exclude '.DS_Store' --exclude 'node_modules/' \
   --exclude '/build/bin/' --exclude '/build/releases/' \
   --exclude '/frontend/dist/' --exclude '/frontend/wailsjs/' \
-  --exclude '/output/' --exclude '/.playwright-cli/' \
+  --exclude '/output/' --exclude '/.playwright-cli/' --exclude '/build/notices/' --exclude '/build/package/' --exclude '/build/artifacts/' \
   "$ROOT/" "$PROJECT/"
 cd "$PROJECT"
 # Use the lockfile for the single frontend build. Changes affect only the copy.
@@ -80,8 +80,16 @@ build_mac() {
   CGO_ENABLED=1 wails build -platform "darwin/$arch" -o mitmAny -trimpath "$@"
   local binary="$PROJECT/build/bin/mitmAny.app/Contents/MacOS/mitmAny"
   [[ "$(lipo -archs "$binary")" == "$native_arch" ]] || fail "macOS $label 架构校验失败。"
-  ditto -c -k --sequesterRsrc --keepParent \
-    "$PROJECT/build/bin/mitmAny.app" "$PACKAGES/mitmAny-$VERSION-macos-$arch.zip"
+  if [[ ! -f "$PROJECT/build/notices/THIRD_PARTY_LICENSES.txt" ]]; then
+    go mod download
+    node scripts/collect-licenses.mjs
+  fi
+  local bundle="$STAGING/bundle-$arch"
+  mkdir -p "$bundle"
+  cp -R "$PROJECT/build/bin/mitmAny.app" "$bundle/"
+  node scripts/package-notices.mjs "$bundle"
+  echo 'Unsigned local build; no Developer ID signing or notarization.' > "$bundle/SIGNING.txt"
+  ditto -c -k --sequesterRsrc "$bundle" "$PACKAGES/mitmAny-$VERSION-macos-$arch.zip"
   # Avoid carrying an Intel executable into the next app bundle.
   rm -rf "$PROJECT/build/bin/mitmAny.app"
 }
@@ -92,7 +100,14 @@ build_mac arm64 'Apple Silicon' -s -skipbindings
 echo "构建 Windows x64……"
 CGO_ENABLED=0 wails build -platform windows/amd64 -o mitmAny.exe -trimpath -s -skipbindings
 [[ -s "$PROJECT/build/bin/mitmAny.exe" ]] || fail "未生成 Windows 可执行文件。"
-ditto -c -k --keepParent "$PROJECT/build/bin/mitmAny.exe" "$PACKAGES/mitmAny-$VERSION-windows-amd64.zip"
+WINDOWS_BUNDLE="$STAGING/bundle-windows"
+mkdir -p "$WINDOWS_BUNDLE"
+# Collect licenses for Windows-only Go imports as well.
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 node scripts/collect-licenses.mjs "$STAGING/windows-licenses.txt"
+cp "$PROJECT/build/bin/mitmAny.exe" "$WINDOWS_BUNDLE/"
+node scripts/package-notices.mjs "$WINDOWS_BUNDLE" "$STAGING/windows-licenses.txt"
+echo 'Unsigned local build; no Authenticode signature.' > "$WINDOWS_BUNDLE/SIGNING.txt"
+ditto -c -k --norsrc --noextattr "$WINDOWS_BUNDLE" "$PACKAGES/mitmAny-$VERSION-windows-amd64.zip"
 
 cd "$PACKAGES"
 for archive in *.zip; do unzip -tq "$archive"; done

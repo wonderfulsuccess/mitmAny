@@ -1,14 +1,15 @@
+import { tr } from "./i18n.ts";
 import type { Detail } from "./types";
 
 const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
 
 /** POSIX shell command. Body bytes never pass through a lossy text decoder. */
 export function requestCurl(detail: Detail): string {
-  if (detail.method === "CONNECT") throw new Error("CONNECT 仅为连接隧道，请选择隧道内的实际请求");
+  if (detail.method === "CONNECT") throw new Error(tr("CONNECT 仅为连接隧道，请选择隧道内的实际请求"));
   if (detail.requestCaptured < detail.requestSize || (!detail.requestBody && detail.requestSize > 0))
-    throw new Error("请求正文尚未完整捕获，无法生成可完整复现的 cURL");
+    throw new Error(tr("请求正文尚未完整捕获，无法生成可完整复现的 cURL"));
   if (Object.keys(detail.requestTrailers ?? {}).length)
-    throw new Error("此请求带有尾部字段，暂不能完整导出为 cURL");
+    throw new Error(tr("此请求带有尾部字段，暂不能完整导出为 cURL"));
   const parts = ["curl --globoff --path-as-is --compressed", `--request ${quote(detail.method)}`, `--url ${quote(detail.url)}`];
   if (detail.method === "HEAD") parts.push("--head");
   const skip = new Set(["content-length", "transfer-encoding", "connection", "proxy-connection", "keep-alive", "upgrade", "te", "trailer", "proxy-authorization"]);

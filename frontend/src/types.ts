@@ -19,6 +19,7 @@ export interface Flow {
   complete: boolean;
   error?: string;
   truncated: boolean;
+  captureNote?: string;
   revision: number;
 }
 export interface Detail extends Flow {

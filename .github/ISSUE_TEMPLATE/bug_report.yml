@@ -1,0 +1,30 @@
+name: Bug report / 问题反馈
+description: Report a reproducible defect using synthetic data.
+body:
+  - type: markdown
+    attributes:
+      value: 'Do not attach real HARs, tokens, CA keys or device IDs. Security vulnerabilities: use SECURITY.md instead.'
+  - type: input
+    id: version
+    attributes:
+      label: App version and download source
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: OS / architecture / Android version if applicable
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Minimal reproduction with synthetic traffic
+      description: Include proxy mode, CA trust state and expected versus actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: recovery
+    attributes:
+      label: Recovery and diagnostics
+      description: Did Stop / Recover network restore connectivity? Include only redacted errors.
