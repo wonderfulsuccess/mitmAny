@@ -28,6 +28,12 @@ mitmAny is an **AI-ready HTTP / HTTPS traffic inspector** for macOS, Windows and
 [SHA-256 checksums](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt). Extract before launching; move the macOS app to Applications. Windows requires WebView2. These packages are unsigned; macOS is not notarized. See [installation and verification](docs/installation.md).
 
 
+## Inside mitmAny
+
+![Request list and JSON inspector with synthetic example traffic](docs/assets/workspace.png)
+
+*This screenshot uses synthetic data. See the [demo walkthrough](docs/demo.md).*
+
 ## From captured traffic to AI-assisted reverse engineering
 
 ```mermaid
@@ -119,12 +125,3 @@ Bug reports, documentation improvements and code contributions are also welcome.
 ## License
 
 [MIT](LICENSE). Vendored dependencies retain their own licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
-
-<details>
-<summary>See mitmAny in action</summary>
-
-![Request list and JSON inspector with synthetic example traffic](docs/assets/workspace.png)
-
-*This screenshot uses synthetic data. See the [demo walkthrough](docs/demo.md).*
-
-</details>

@@ -27,6 +27,12 @@ mitmAny は、**AI によるリバースエンジニアリングを支援する 
 解凍してから起動してください。macOS はアプリを Applications に移動、Windows は WebView2 が必要です。このリリースは未署名で、macOS の公証もありません。[インストールと検証（英語）](docs/installation.md)。
 
 
+## アプリの画面
+
+![合成データによるリクエスト一覧と JSON ビューアー](docs/assets/workspace.png)
+
+*画面は合成データです。実際のアカウント情報は含みません。[デモ（英語）](docs/demo.md)*
+
 ## 通信を根拠に AI と API を解析
 
 ```mermaid
@@ -96,12 +102,3 @@ wails dev
 [Development](docs/development.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
 [MIT](LICENSE) · [Third-party licenses](THIRD_PARTY_NOTICES.md)
-
-<details>
-<summary>実際のアプリ画面を見る</summary>
-
-![合成データによるリクエスト一覧と JSON ビューアー](docs/assets/workspace.png)
-
-*画面は合成データです。実際のアカウント情報は含みません。[デモ（英語）](docs/demo.md)*
-
-</details>
