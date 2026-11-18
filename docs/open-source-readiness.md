@@ -19,9 +19,9 @@
 | --- | --- |
 | `go test -race ./...` | 通过，包括新增的 HTML 超限、拥塞、解压与 HAR/旧文件读取回归测试 |
 | `go vet ./...` | 通过 |
-| 前端 `npm test` | 19 项通过（Node 22.20.0） |
+| 前端 `npm test` | 22 项通过（Node 22.20.0），包含语言默认值、切换与翻译占位符检查 |
 | 前端 `npm run build` | TypeScript / Vite 构建通过 |
-| `node scripts/check-release.mjs` | 通过，当前工作区版本仍为 1.1.0；本轮变更列于 Unreleased |
+| `node scripts/check-release.mjs` | 通过；发布版本为 1.2.0 |
 | `actionlint` | GitHub Actions 工作流静态检查通过 |
 | `bash -n` | 本地打包与 macOS 签名脚本语法检查通过 |
 | macOS 无凭据签名路径 | 正确生成未进行 Developer ID 签名/公证的状态说明 |
@@ -33,11 +33,11 @@
 
 本地包位于 `build/releases/`，属于未正式发布的验证产物。Windows 包为 macOS 交叉编译；macOS 包没有 Developer ID 签名或公证。浏览器预览使用 mock，不能替代真实网络、证书、手机和原生窗口验收。
 
-## 正式公开发布前仍需完成
+## 发布与后续验收
 
-1. 在 GitHub 上运行新 CI，确认两个原生 runner 都通过；配置分支保护、必要检查与私下漏洞报告。
+1. 仓库已按维护者要求公开。v1.2.0 使用 GitHub Actions 原生 Windows/macOS 构建，仅在双平台验证通过后公开 Release。分支保护等维护策略可后续配置。
 2. 若发布签名包，配置自己的签名凭据，运行并验证 macOS 公证/Windows 签名路径；无凭据时明确发布未签名构建。
 3. 按 [平台验收清单](release-checklist.md)完成真实 Windows、macOS 与 Android 设备测试，特别是异常退出、断线与已有代理恢复。
-4. 为本次变更确定新的发布版本，更新变更记录，创建匹配 tag，审核 Release 草稿。不要将本次验证包覆盖为旧版 1.1.0 正式资产。
+4. 本次发布版本为 v1.2.0，中英文 README 提供固定版本下载链接。历史 1.1.0 本地验证包不会作为本次发布附件。
 
-macOS 的 `SecKeychainCopyDefault` 弃用警告仍存在，本轮未替换证书信任实现。密钥扫描为启发式检查，并非完整安全审计；未改写 Git 历史、提交/推送代码、修改仓库可见性或公开发布版本。
+macOS 的 `SecKeychainCopyDefault` 弃用警告仍存在，本轮未替换证书信任实现。密钥扫描为启发式检查，并非完整安全审计。源码和文档已提交并推送，仓库已公开；正式构建结果以 GitHub Actions 和 Release 页面为准。
