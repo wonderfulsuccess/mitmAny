@@ -3,8 +3,13 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
+import { join } from 'node:path';
 import { requestCurl } from '../src/curl.ts';
 const run = promisify(exec);
+// Exported commands target POSIX shells; Git Bash provides one on Windows.
+const shell = process.env.POSIX_SHELL ?? (process.platform === 'win32'
+  ? join(process.env.ProgramFiles ?? 'C:\\Program Files', 'Git', 'bin', 'bash.exe')
+  : '/bin/sh');
 const detail = overrides => ({ method:'POST', url:'https://example.test/path', host:'example.test', requestHeaders:{}, requestBody:'', requestEncoding:'base64', requestCaptured:0, requestSize:0, ...overrides });
 
 test('generated shell command replays binary, multipart boundary, repeated headers, cookies and shell-sensitive URL', async () => {
@@ -23,7 +28,7 @@ test('generated shell command replays binary, multipart boundary, repeated heade
       requestBody:body.toString('base64'),requestSize:body.length,requestCaptured:body.length,
       requestHeaders:{'Content-Type':['multipart/form-data; boundary=example'],Cookie:["session='$(echo BAD)"],Authorization:['Bearer token'], 'X-Repeat':['first','second'],Connection:['keep-alive, X-Hop'], 'X-Hop':['drop-me'],'Content-Length':['999']},
     }));
-    await run(command, {shell:'/bin/sh'});
+    await run(command, {shell});
     assert.equal(received.method,'PATCH'); assert.equal(received.url,path);
     assert.deepEqual(received.body,body); assert.equal(received.headers.cookie,"session='$(echo BAD)");
     assert.equal(received.headers.authorization,'Bearer token'); assert.equal(received.headers.host,'virtual.test');
