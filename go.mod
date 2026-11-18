@@ -10,7 +10,7 @@ require (
 	github.com/lqqyt2423/go-mitmproxy v1.9.4
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/pelletier/go-toml/v2 v2.4.3
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.2
 	github.com/wailsapp/wails/v2 v2.15.0
 	golang.org/x/net v0.61.0
 	golang.org/x/sys v0.49.0
