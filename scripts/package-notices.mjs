@@ -6,7 +6,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 if (!process.argv[2]) throw new Error('Usage: node scripts/package-notices.mjs <package-dir> [license-bundle]');
 const target = resolve(process.argv[2]);
 mkdirSync(target,{recursive:true});
-for (const file of ['LICENSE','THIRD_PARTY_NOTICES.md','README.md','README.en.md','README.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CHANGELOG.md']) {
+for (const file of ['LICENSE','THIRD_PARTY_NOTICES.md','README.md','README.en.md','README.zh-CN.md','README.zh-TW.md','README.ja.md','README.ko.md','CONTRIBUTING.md','SECURITY.md','CHANGELOG.md']) {
   copyFileSync(resolve(root,file),resolve(target,file));
 }
 cpSync(resolve(root,'docs'),resolve(target,'docs'),{recursive:true});

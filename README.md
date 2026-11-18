@@ -1,29 +1,66 @@
-# mitmAny
+<h1 align="center">mitmAny</h1>
 
-**Inspect desktop and Android HTTP / HTTPS traffic, then use real requests as evidence for AI-assisted analysis.**
+<p align="center"><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.zh-TW.md">繁體中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.ko.md">한국어</a></p>
 
-An open-source desktop traffic inspector built with Go, Wails and React for macOS and Windows. Capture through the system proxy or an Android ADB USB tunnel. Inspect locally, or connect a compatible AI client through the read-only MCP bridge.
+<p align="center">
+  <img src="docs/assets/ai-network-detective.png" alt="AI network detective — conceptual illustration" width="820" />
+</p>
+<p align="center">
+  <img src="docs/assets/project-badges.svg" alt="100% free · MCP ready · MIT · macOS + Windows" width="680" />
+</p>
 
-[简体中文](README.zh-CN.md) · [Downloads](https://github.com/wonderfulsuccess/mitmAny/releases) · [Installation](docs/installation.md) · [Contributing](CONTRIBUTING.md)
+**Give your AI eyes on real network traffic. Turn captured requests into an API investigation.**
 
-![Request list and JSON inspector with synthetic example traffic](docs/assets/workspace.png)
+mitmAny is an **AI-ready HTTP / HTTPS traffic inspector** for macOS, Windows and Android USB workflows. Capture what a website or app actually sends, connect Codex or another compatible MCP client, and ask AI to help reverse-engineer APIs from real evidence: endpoints, authentication, pagination, response schemas and business flows.
 
-*This screenshot uses synthetic data. See the [demo walkthrough](docs/demo.md).*
+**100% free and open source. Every mitmAny feature is free: no paid edition, subscription, trial expiry or feature paywall.** Optional tips fund maintenance and unlock nothing. Any fees charged by your chosen AI client or model provider are separate from mitmAny.
+
 
 ## Downloads
 
-**v1.2.0** · [Release notes](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.0)
+**v1.2.1** · [Release notes](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.1)
 
 | Platform | Direct download |
 | --- | --- |
-| macOS — Apple Silicon and Intel | [Download universal ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.0/mitmAny-1.2.0-macos-universal.zip) |
-| Windows — x64 | [Download Windows ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.0/mitmAny-1.2.0-windows-amd64.zip) |
+| macOS — Apple Silicon and Intel | [Download universal ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-macos-universal.zip) |
+| Windows — x64 | [Download Windows ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-windows-amd64.zip) |
 
-[SHA-256 checksums](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.0/SHA256SUMS.txt). Extract before launching; move the macOS app to Applications. Windows requires WebView2. These packages are unsigned; macOS is not notarized. See [installation and verification](docs/installation.md).
+[SHA-256 checksums](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt). Extract before launching; move the macOS app to Applications. Windows requires WebView2. These packages are unsigned; macOS is not notarized. See [installation and verification](docs/installation.md).
+
+
+## From captured traffic to AI-assisted reverse engineering
+
+```mermaid
+flowchart LR
+  A["Operate an app"] --> B["Capture traffic"]
+  B --> C["Analyze with AI"]
+  C --> D["API evidence"]
+```
+
+
+You operate the app. mitmAny captures the evidence. Your AI client helps make sense of it.
+
+| What you want to understand | What you can ask AI to investigate |
+| --- | --- |
+| An undocumented API | Group observed endpoints, methods and parameters into an API outline, citing request IDs. |
+| Login and session behavior | Trace observed headers, cookies and request order; distinguish evidence from assumptions. |
+| Pagination and search | Compare requests while you scroll, change filters or search; identify cursor and page parameters. |
+| A business workflow | Mark actions and inspect the corresponding time windows to map a sequence of requests. |
+| A bug or unexpected response | Compare successful and failed requests, status codes, timing and captured bodies. |
+| Integration documentation | Draft schema notes and client-code examples from captured evidence for you to review. |
+
+MCP is the bridge between your capture session and your AI tools. Instead of repeatedly pasting screenshots and JSON, the AI client can inspect capture status, scope an observation to a host, summarize/search flows, read headers and bounded bodies, and wait for new traffic. Observation bookmarks help organize an investigation; they do not start capture or preserve evicted records.
+
+The bundled `mitmany-network-analysis` skill guides evidence-based analysis. **Settings → Codex** installs the skill and registers the MCP connection locally. Reconnect MCP or open a new Codex session, then start capture yourself and try:
+
+> Analyze the login and pagination protocol of `api.example.test`. I will use the app. Scope the observation to this host, cite request IDs for your conclusions, and call out missing or truncated evidence. Finish with an API outline and a list of uncertainties.
+
+AI analysis runs in your connected client, not in an embedded model inside mitmAny. MCP reads captured traffic and manages observation bookmarks; it does not replay requests, change proxies or bypass certificate pinning. Use it for systems you own or are authorized to inspect. [Connection details (Chinese)](docs/manual.zh-CN.md#codex--mcp-网络协议分析).
+
 
 ## Language
 
-English is the default language. Switch to **简体中文** in **Settings → Language**; your choice is saved for future launches. The [Chinese README](README.zh-CN.md) is maintained separately.
+English is the default language. Switch to **简体中文** in **Settings → Language**; your choice is saved for future launches. README translations are available in English, Simplified Chinese, Traditional Chinese, Japanese and Korean. The application interface supports English and Simplified Chinese only.
 
 ## Get started
 
@@ -82,3 +119,12 @@ Bug reports, documentation improvements and code contributions are also welcome.
 ## License
 
 [MIT](LICENSE). Vendored dependencies retain their own licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
+
+<details>
+<summary>See mitmAny in action</summary>
+
+![Request list and JSON inspector with synthetic example traffic](docs/assets/workspace.png)
+
+*This screenshot uses synthetic data. See the [demo walkthrough](docs/demo.md).*
+
+</details>

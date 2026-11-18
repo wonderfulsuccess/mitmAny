@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 — 2026-11-18
+
+- Add a visible toolbar support entry with optional $1/$10/$100 one-time Stripe links, in English and Simplified Chinese. All application features remain free.
+- Rework README around AI-assisted API reverse engineering with MCP, original conceptual artwork and a workflow diagram.
+- Add Traditional Chinese, Japanese and Korean README translations; bundle all five documentation languages. The application UI remains English/Simplified Chinese.
+
+
 ## 1.2.0 — 2026-11-18
 
 - Default to English with persistent Simplified Chinese switching across the interface and native dialogs.
