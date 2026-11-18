@@ -24,6 +24,7 @@ import {
   FolderOpen,
   Globe2,
   HardDrive,
+  Heart,
   Layers3,
   Loader2,
   LockKeyhole,
@@ -45,6 +46,7 @@ import {
   Zap,
 } from "lucide-react";
 import CodexConnection from "./CodexConnection";
+import SupportDialog from "./SupportDialog";
 import type { AndroidState, AppState, Certificate, Detail, Flow } from "./types";
 import { api, errorText, isDesktop, resourceType, size } from "./bridge";
 import { domainName, groupDomains, searchDomainGroups } from "./domainGroups";
@@ -136,6 +138,7 @@ function App() {
   const capturing = state.running || android.enabled;
   const [certOpen, setCertOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [systemProxy, setSystemProxy] = useState(true);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
@@ -563,6 +566,10 @@ function App() {
                 <Play size={15} fill="currentColor" />
               )}
             </button>
+            <button type="button" className="titlebar-action support-entry" title={tr("Support mitmAny")}
+              aria-label={tr("Support mitmAny")} onClick={() => setSupportOpen(true)}>
+              <Heart size={15} aria-hidden="true" /><span>{tr("Support")}</span>
+            </button>
             <button
               className="titlebar-action"
               title={tr("Settings · 设置")}
@@ -989,6 +996,7 @@ function App() {
           />
         </Suspense>
       ) : null}
+      {supportOpen ? <SupportDialog onClose={() => setSupportOpen(false)} /> : null}
       {settingsOpen ? (
         <Settings
           state={state}

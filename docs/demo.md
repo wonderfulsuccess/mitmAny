@@ -17,3 +17,7 @@ For a real end-to-end demonstration, use a dedicated Android debug app that trus
 Replace the synthetic host with the exact host of your controlled test service. Confirm the response evidence instead of assuming that a mock UI demonstrates network/device functionality. Restore the phone proxy before disconnecting USB.
 
 The empty first-capture state is available with `?empty=1`. All certificate, proxy, export and integration calls in this fixture are mocks and do not change OS settings.
+
+## README artwork
+
+`assets/ai-network-detective.png` is an AI-generated concept illustration created for mitmAny. It represents AI-assisted traffic analysis, not an application screenshot or an embedded AI model. `assets/project-badges.svg` is project-authored vector artwork. Both are distributed under the project MIT license.

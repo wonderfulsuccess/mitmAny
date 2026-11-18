@@ -14,7 +14,7 @@ assert.equal(wails['frontend:install'], 'npm ci');
 if (process.env.GITHUB_REF_TYPE === 'tag') {
   assert.equal(process.env.GITHUB_REF_NAME, `v${version}`, 'release tag must match product version');
 }
-for (const path of ['LICENSE','SECURITY.md','CONTRIBUTING.md','THIRD_PARTY_NOTICES.md','README.en.md','README.zh-CN.md','docs/assets/workspace.png']) {
+for (const path of ['LICENSE','SECURITY.md','CONTRIBUTING.md','THIRD_PARTY_NOTICES.md','README.en.md','README.zh-CN.md','README.zh-TW.md','README.ja.md','README.ko.md','docs/assets/workspace.png']) {
   assert.ok(existsSync(new URL(`../${path}`,import.meta.url)), `missing ${path}`);
 }
 console.log(`Release metadata consistent: ${version}`);

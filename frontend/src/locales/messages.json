@@ -1430,5 +1430,45 @@
   "Failed requests": {
     "zh": "失败请求",
     "en": "Failed requests"
+  },
+  "Support": {
+    "en": "Support",
+    "zh": "支持项目"
+  },
+  "Support mitmAny": {
+    "en": "Support mitmAny",
+    "zh": "支持 mitmAny"
+  },
+  "Free software. Powered by your support.": {
+    "en": "Free software. Powered by your support.",
+    "zh": "功能全部免费，维护感谢有你。"
+  },
+  "Every mitmAny feature is 100% free. If it helps you, an optional tip supports continued maintenance.": {
+    "en": "Every mitmAny feature is 100% free. If it helps you, an optional tip supports continued maintenance.",
+    "zh": "mitmAny 所有功能 100% 免费。如果它对你有帮助，欢迎自愿支持项目持续维护。"
+  },
+  "Support with US ${p0} — opens Stripe in your browser": {
+    "en": "Support with US ${p0} — opens Stripe in your browser",
+    "zh": "支持 US ${p0} — 在浏览器打开 Stripe"
+  },
+  "One-time tip": {
+    "en": "One-time tip",
+    "zh": "一次性支持"
+  },
+  "No subscription, paid features or priority support. Stripe checkout opens in your browser; merchant: SimiSF.": {
+    "en": "No subscription, paid features or priority support. Stripe checkout opens in your browser; merchant: SimiSF.",
+    "zh": "不会自动续费，不解锁付费功能或优先支持。将在浏览器打开 Stripe 支付页，收款商户为 SimiSF。"
+  },
+  "Review the currency and total before paying. Alipay and WeChat Pay availability depends on your region and checkout currency.": {
+    "en": "Review the currency and total before paying. Alipay and WeChat Pay availability depends on your region and checkout currency.",
+    "zh": "付款前请核对币种和总额。支付宝、微信支付是否可用，取决于地区与结账币种。"
+  },
+  "Bug reports, documentation and code contributions help too. Thank you!": {
+    "en": "Bug reports, documentation and code contributions help too. Thank you!",
+    "zh": "提交问题、完善文档和贡献代码同样有帮助。感谢你的支持！"
+  },
+  "关闭": {
+    "en": "Close",
+    "zh": "关闭"
   }
 }
