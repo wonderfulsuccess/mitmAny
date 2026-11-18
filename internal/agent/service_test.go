@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -110,8 +111,13 @@ func TestAuthenticatedTransportAndMCP(t *testing.T) {
 	}
 	defer local.Close()
 	info, e := os.Stat(filepath.Join(dir, "agent-endpoint.json"))
-	if e != nil || info.Mode().Perm()&0077 != 0 {
-		t.Fatal("discovery permissions", e)
+	if e != nil {
+		t.Fatal("discovery file", e)
+	}
+	// Windows reports synthetic mode bits; access is controlled by NTFS ACLs.
+	// Keep checking POSIX permissions where they represent actual access.
+	if runtime.GOOS != "windows" && info.Mode().Perm()&0077 != 0 {
+		t.Fatalf("discovery permissions: %v", info.Mode().Perm())
 	}
 	for _, origin := range []string{"", "https://evil.example"} {
 		req, _ := http.NewRequest("POST", local.endpoint.URL, strings.NewReader(`{}`))
