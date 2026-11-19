@@ -13,7 +13,7 @@
   "info": {
     "companyName": "mitmAny",
     "productName": "mitmAny",
-    "productVersion": "1.2.1",
+    "productVersion": "1.2.2",
     "copyright": "Copyright © 2026 mitmAny",
     "comments": "Local-first HTTP and HTTPS traffic inspector"
   }

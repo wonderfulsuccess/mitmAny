@@ -2042,11 +2042,7 @@ body,
 @media (max-width: 520px) { .codex-heading { flex-wrap: wrap; } .codex-heading > div { flex-basis: 100%; } }
 
 /* First capture stays in the workspace; no blocking onboarding dialog. */
-.capture-guide { display: grid; gap: 10px; width: min(100%, 440px); margin: 12px 0; text-align: left; }
-.capture-guide > div { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
-.capture-guide strong { font-size: 12px; }
-.capture-guide span { font-size: 11px; opacity: .75; grid-column: 1; }
-.capture-guide button { grid-column: 2; grid-row: 1 / 3; }
+.capture-guide { width: min(100%, 440px); margin: 12px 0; text-align: left; }
 .table-scroll:has(.capture-guide) .empty-state { height: auto; min-height: 100%; padding: 22px; box-sizing: border-box; }
 @media (max-height: 760px) { .empty-state:has(.capture-guide) .empty-illustration { display: none; } }
 
@@ -2068,3 +2064,47 @@ body,
 @media (max-width: 380px) { .support-tiers { gap: 5px; } .support-tiers strong { font-size: 19px; } .support-tiers span { font-size: 10px; } }
 
 @media (max-width: 520px) { .support-tiers strong { font-size: 18px; white-space: nowrap; } }
+
+/* First-capture guidance shares the inspector palette and keeps the next action visible. */
+.certificate-badge { flex-shrink: 0; gap: 6px; padding: 5px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.certificate-badge.ready { color: var(--accent); background: var(--accent-soft); }
+.certificate-badge:is(.missing, .invalid, .untrusted, .error) { color: #b42332; background: #fff0f1; border: 1px solid #eeb9be; }
+:root[data-theme="dark"] .certificate-badge:is(.missing, .invalid, .untrusted, .error) { color: #ffb6be; background: #482b32; border-color: #81505b; }
+.setup-modal { width: 560px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow: auto; }
+.setup-heading { margin: 24px 0; color: var(--text); }
+.setup-heading > svg { color: var(--accent); }
+.setup-heading h2 { font-size: 23px; letter-spacing: -.6px; margin: 12px 0 8px; }
+.setup-heading p, .setup-troubleshooting p { line-height: 1.65; color: var(--muted); }
+.setup-steps { list-style: none; margin: 16px 0; padding: 0; text-align: left; width: 100%; }
+.setup-steps li { display: grid; grid-template-columns: 28px 1fr; gap: 8px 12px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.setup-steps li:first-child { border-top: 1px solid var(--line); }
+.setup-steps strong { font-size: 14px; color: var(--text); }
+.setup-steps p { font-size: 12px; line-height: 1.65; color: var(--muted); margin: 6px 0 0; }
+.setup-steps .step-marker { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; font-size: 12px; font-weight: 600; color: var(--text); }
+.setup-steps .complete .step-marker { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.setup-steps button { grid-column: 2; justify-self: start; }
+.step-status { display: block; color: var(--muted); font-size: 11px; margin-top: 6px; }
+.setup-help { padding: 10px 0; color: var(--accent); font-size: 12px; }
+.setup-working { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.setup-footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+.setup-troubleshooting { margin-top: 22px; text-align: left; }
+.setup-troubleshooting h3 { margin-bottom: 8px; }
+.setup-troubleshooting .setup-path { font-size: 11px; color: var(--accent); }
+.setup-troubleshooting details { border-bottom: 1px solid var(--line); padding: 12px 0; }
+.setup-troubleshooting summary { cursor: pointer; font-weight: 600; line-height: 1.5; }
+.setup-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.capture-guide .setup-steps { margin: 0; }
+.empty-state:has(.capture-guide) > h2 { margin-top: 8px; }
+.empty-state:has(.capture-guide) .empty-illustration { display: none; }
+@media (max-width: 1100px) { .titlebar-view { display: none; } .certificate-badge { max-width: 180px; } .certificate-badge span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
+@media (max-width: 700px) { .certificate-badge { max-width: 140px; font-size: 10px; padding: 5px; } .titlebar-actions { gap: 1px; } }
+.setup-modal .modal-top > span { letter-spacing: 0; }
+@media (max-width: 1200px) { .titlebar-view { display: none; } }
+@media (max-width: 700px) {
+  .titlebar { height: 82px; align-items: flex-start; }
+  .titlebar-brand, .titlebar-workspace { height: 45px; }
+  .titlebar-actions { position: absolute; top: 45px; left: 8px; right: 8px; height: 32px; justify-content: flex-end; }
+  .certificate-badge { max-width: 205px; font-size: 11px; }
+  .app-shell.mobile-sidebar-open .sidebar { top: 82px; }
+  .sidebar-scrim { top: 82px; }
+}
