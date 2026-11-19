@@ -21,19 +21,6 @@ mitmAny 是一款**为 AI 辅助逆向打造的 HTTP / HTTPS 抓包工具**，�
 
 **软件 100% 免费、开源，所有功能全部开放。没有付费版、订阅、试用期限或付费解锁功能。** 自愿支持只用于项目维护，不解锁任何特权。你选择的 AI 客户端或模型服务可能单独收费，这不是 mitmAny 的软件收费。
 
-
-## 下载安装
-
-**v1.2.1** · [发布说明](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.1)
-
-| 系统 | 直接下载 |
-| --- | --- |
-| macOS — Apple Silicon / Intel 通用版 | [下载 macOS ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-macos-universal.zip) |
-| Windows — x64 | [下载 Windows ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-windows-amd64.zip) |
-
-[SHA-256 校验文件](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt)。请先解压；macOS 应用移至 Applications，Windows 需要 WebView2。本次安装包未签名，macOS 未公证，可能出现系统安全提示。[安装与校验说明](docs/installation.md)
-
-
 ## 软件界面
 
 ![mitmAny 请求列表与 JSON 详情，展示合成示例数据](docs/assets/workspace.png)

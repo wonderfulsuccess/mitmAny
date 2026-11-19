@@ -21,18 +21,6 @@ mitmAny は、**AI によるリバースエンジニアリングを支援する 
 
 **ソフトウェアは 100% 無料・オープンソース。すべての機能を無料で利用できます。** 有料版、サブスクリプション、試用期限、有料の機能解除はありません。任意の支援は保守のためのもので、特典を解放しません。利用する AI クライアントやモデル提供元の料金は別途発生する場合があります。
 
-
-## ダウンロード
-
-**v1.2.1** · [Release](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.1)
-
-- [macOS — Apple Silicon / Intel ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-macos-universal.zip)
-- [Windows — x64 ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-windows-amd64.zip)
-- [SHA-256](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt)
-
-解凍してから起動してください。macOS はアプリを Applications に移動、Windows は WebView2 が必要です。このリリースは未署名で、macOS の公証もありません。[インストールと検証（英語）](docs/installation.md)。
-
-
 ## アプリの画面
 
 ![合成データによるリクエスト一覧と JSON ビューアー](docs/assets/workspace.png)

@@ -21,19 +21,6 @@ mitmAny is an **AI-ready HTTP / HTTPS traffic inspector** for macOS, Windows and
 
 **100% free and open source. Every mitmAny feature is free: no paid edition, subscription, trial expiry or feature paywall.** Optional tips fund maintenance and unlock nothing. Any fees charged by your chosen AI client or model provider are separate from mitmAny.
 
-
-## Downloads
-
-**v1.2.1** · [Release notes](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.1)
-
-| Platform | Direct download |
-| --- | --- |
-| macOS — Apple Silicon and Intel | [Download universal ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-macos-universal.zip) |
-| Windows — x64 | [Download Windows ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-windows-amd64.zip) |
-
-[SHA-256 checksums](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt). Extract before launching; move the macOS app to Applications. Windows requires WebView2. These packages are unsigned; macOS is not notarized. See [installation and verification](docs/installation.md).
-
-
 ## Inside mitmAny
 
 ![Request list and JSON inspector with synthetic example traffic](docs/assets/workspace.png)
