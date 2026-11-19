@@ -21,18 +21,6 @@ mitmAny는 **AI 기반 리버스 엔지니어링을 돕는 HTTP / HTTPS 트래�
 
 **소프트웨어는 100% 무료이며 오픈 소스입니다. 모든 기능을 무료로 제공합니다.** 유료 버전, 구독, 체험 기간, 유료 기능 잠금 해제가 없습니다. 자발적인 후원은 유지보수를 위한 것이며 추가 혜택을 제공하지 않습니다. 선택한 AI 클라이언트나 모델 제공업체는 별도 요금을 부과할 수 있습니다.
 
-
-## 다운로드
-
-**v1.2.1** · [Release](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.1)
-
-- [macOS — Apple Silicon / Intel ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-macos-universal.zip)
-- [Windows — x64 ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-windows-amd64.zip)
-- [SHA-256](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt)
-
-압축을 푼 후 실행하세요. macOS 앱은 Applications로 이동하고, Windows에는 WebView2가 필요합니다. 이 버전은 서명되지 않았으며 macOS 공증도 받지 않았습니다. [설치 및 검증(영문)](docs/installation.md).
-
-
 ## 앱 화면
 
 ![합성 데이터로 표시한 요청 목록과 JSON 뷰어](docs/assets/workspace.png)

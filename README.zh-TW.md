@@ -21,18 +21,6 @@ mitmAny 是一款**為 AI 輔助逆向分析打造的 HTTP / HTTPS 流量檢視�
 
 **軟體 100% 免費、開源，所有功能完全開放。沒有付費版、訂閱、試用期限或付費解鎖。** 自願贊助僅用於維護，不提供額外特權。你選用的 AI 用戶端或模型服務可能另行收費，與 mitmAny 的軟體費用無關。
 
-
-## 下載
-
-**v1.2.1** · [Release](https://github.com/wonderfulsuccess/mitmAny/releases/tag/v1.2.1)
-
-- [macOS — Apple Silicon / Intel ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-macos-universal.zip)
-- [Windows — x64 ZIP](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/mitmAny-1.2.1-windows-amd64.zip)
-- [SHA-256](https://github.com/wonderfulsuccess/mitmAny/releases/download/v1.2.1/SHA256SUMS.txt)
-
-請先解壓縮，macOS 應用程式移至 Applications；Windows 需要 WebView2。本版未簽署，macOS 未經公證。[安裝與驗證（英文）](docs/installation.md)。
-
-
 ## 軟體介面
 
 ![以合成流量展示請求清單與 JSON 檢視器](docs/assets/workspace.png)
