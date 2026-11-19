@@ -12,6 +12,7 @@ import {
   ShieldOff,
   X,
 } from "lucide-react";
+import { certificateHealth, certificateLabels } from "./setupState";
 import type { Certificate } from "./types";
 import { api, errorText } from "./bridge";
 export default function CertificateDialog({
@@ -27,6 +28,7 @@ export default function CertificateDialog({
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
+  const health = certificateHealth(certificate, !certificate ? error : "");
   const isMac = navigator.platform.includes("Mac");
   useEffect(() => {
     dialog.current?.showModal();
@@ -99,9 +101,7 @@ export default function CertificateDialog({
         )}
         <div>
           <strong>
-            {certificate?.trusted
-              ? tr("CA certificate is trusted")
-              : tr("CA certificate is not trusted")}
+            {tr(certificateLabels[health])}
           </strong>
           <span>
             {certificate?.trusted
@@ -139,6 +139,7 @@ export default function CertificateDialog({
           </code>
         </div>
       </div>
+      {health === "invalid" && <div className="notice">{tr("Check your computer’s date and time, then open certificate details. Reinstalling the same expired certificate will not renew it.")}</div>}
       {running ? (
         <div className="notice">{tr("请先停止抓包，再安装或卸载证书。")}</div>
       ) : null}

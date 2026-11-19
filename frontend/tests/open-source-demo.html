@@ -2,9 +2,14 @@
 <html lang="zh-CN"><head><meta charset="UTF-8"><title>mitmAny · Synthetic demo</title></head>
 <body><div id="root"></div><script type="module">
 // Public, synthetic UI fixture. Every native operation below is mocked.
-const empty = new URLSearchParams(location.search).has('empty');
+const params = new URLSearchParams(location.search);
+const empty = params.has('empty');
+const scenario = params.get('setup');
 const state = {running:!empty,systemProxy:!empty,recording:true,address:'127.0.0.1:9080',platform:'darwin',recoveryPending:false,error:'',storageError:'',dataDirectory:'Synthetic demo · no captured user data'};
 const cert = {exists:true,trusted:!empty,valid:true,subject:'mitmAny Local CA',fingerprint:'SYNTHETIC-DEMO',expires:'2030-01-01',path:'Synthetic demo'};
+if (scenario === 'invalid') cert.valid = false;
+if (scenario === 'ready') cert.trusted = true;
+if (scenario === 'missing') cert.exists = false;
 const phone = {enabled:false,serial:'DEMO-DEVICE',listening:false,address:'127.0.0.1:9081',pending:[]};
 const codex = {skillInstalled:false,mcpRegistered:false,skillDisabled:false,ready:false,serviceRunning:true,lastActivity:0,skillPath:'~/.agents/skills/mitmany-network-analysis',configPath:'~/.codex/config.toml',error:''};
 const base = {scheme:'https',protocol:'HTTP/2.0',status:200,contentType:'application/json',complete:true,truncated:false,revision:1,requestSize:0,requestCaptured:0,requestHeaders:{Accept:['application/json']},responseHeaders:{'Content-Type':['application/json'],'Cache-Control':['no-store']},requestBody:'',requestEncoding:'base64',responseEncoding:'base64'};
@@ -24,19 +29,20 @@ let flows = empty ? [] : rows.map(([method,host,path,status,body,duration],i)=>{
 });
 let revision=1;
 window.go={main:{App:{
- GetState:async()=>({...state}), GetCertificateStatus:async()=>({...cert}), GetAndroidState:async()=>({...phone}),
+ SetLanguage:async()=>{},
+ GetState:async()=>({...state}), GetCertificateStatus:async()=>{if(scenario==='check-error') throw new Error('Synthetic certificate check failed'); return {...cert};}, GetAndroidState:async()=>({...phone}),
  GetCodexStatus:async()=>({...codex}), ConnectCodex:async()=>Object.assign(codex,{ready:true,skillInstalled:true,mcpRegistered:true}),
  AndroidDevices:async()=>[{serial:'DEMO-DEVICE',state:'device',model:'Demo Android',product:'Synthetic',name:'Demo Android'}],
  SetAndroidEnabled:async(serial,enabled)=>Object.assign(phone,{enabled,listening:enabled,serial}),
  InstallAndroidCertificate:async()=> 'Synthetic demo: no certificate was installed.',
  GetFlows:async cursor=>({flows:cursor===revision?[]:[...flows],cursor:revision,reset:!cursor,total:flows.length,bytes:flows.reduce((n,f)=>n+f.responseSize,0),dropped:0}),
  GetFlow:async id=>flows.find(f=>f.id===id),
- StartCapture:async system=>Object.assign(state,{running:true,systemProxy:system}),
+ StartCapture:async system=>{if(scenario==='start-error') throw new Error('Synthetic proxy port is in use'); return {...Object.assign(state,{running:true,systemProxy:system})};},
  StopCapture:async()=>Object.assign(state,{running:false,systemProxy:false}),
  RecoverNetwork:async()=>Object.assign(state,{running:false,systemProxy:false}),
  SetRecording:async recording=>Object.assign(state,{recording}),
  ClearFlows:async()=>{flows=[];revision++;},
- InstallCertificate:async()=>Object.assign(cert,{trusted:true}), UninstallCertificate:async()=>Object.assign(cert,{trusted:false}),
+ InstallCertificate:async()=>{if(scenario==='install-error') throw new Error('Synthetic authorization canceled'); return {...Object.assign(cert,{trusted:true,exists:true})};}, UninstallCertificate:async()=>Object.assign(cert,{trusted:false}),
  ExportCertificate:async()=>{},OpenCertificateInKeychain:async()=>{},SaveBody:async()=>{},ExportHAR:async()=>{},ImportHAR:async()=>0,WindowAction:async()=>{}
 }}};
 await import('/src/main.tsx');

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.2 — 2026-11-19
+
+- Guide first-time desktop capture with two steps: install and trust the CA, then start capture with automatic system proxy setup.
+- Keep CA readiness visible in the toolbar, with distinct missing, invalid, untrusted and check-failure states; recheck on app focus and before capture.
+- Adapt the empty request list to setup, waiting, paused recording and filtered results, with direct next actions.
+- Add persistent capture errors and a troubleshooting guide for proxy routing, upstream proxies, port conflicts, HTTPS trust and network recovery.
+- Keep setup accessible in English and Simplified Chinese, including narrow desktop windows.
+
 ## 1.2.1 — 2026-11-18
 
 - Add a visible toolbar support entry with optional $1/$10/$100 one-time Stripe links, in English and Simplified Chinese. All application features remain free.

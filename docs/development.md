@@ -43,3 +43,5 @@ For UI-only work: `npm --prefix frontend run dev -- --host 127.0.0.1`. The brows
 `wails build -clean` builds the host app. macOS: `wails build -clean -platform darwin/universal`. The local `scripts/build-release.sh` creates separate Intel, Apple Silicon and Windows ZIPs from a temporary copy. CI creates a universal macOS ZIP and a Windows x64 ZIP.
 
 See [release procedure](releasing.md) and [manual platform acceptance](release-checklist.md). A cross-compiled Windows binary is not a substitute for Windows device testing.
+
+First-capture UI fixtures: append `?empty` to the synthetic demo for an untrusted CA and empty request list. Add `&setup=install-error`, `start-error`, `check-error`, `invalid`, `missing`, or `ready` for setup edge cases. All operations remain mocked. The `mitmAny:capture-setup:v1` local-storage key records dismissal; certificate problems still prompt once on each app launch.

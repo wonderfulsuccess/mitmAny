@@ -1470,5 +1470,209 @@
   "关闭": {
     "en": "Close",
     "zh": "关闭"
+  },
+  "Checking CA certificate…": {
+    "en": "Checking CA certificate…",
+    "zh": "正在检查 CA 证书…"
+  },
+  "CA check failed": {
+    "en": "CA check failed",
+    "zh": "CA 证书检查失败"
+  },
+  "CA certificate missing": {
+    "en": "CA certificate missing",
+    "zh": "CA 证书缺失"
+  },
+  "CA certificate invalid": {
+    "en": "CA certificate invalid",
+    "zh": "CA 证书已失效"
+  },
+  "CA not trusted · Install": {
+    "en": "CA not trusted · Install",
+    "zh": "CA 未信任 · 点击安装"
+  },
+  "CA ready": {
+    "en": "CA ready",
+    "zh": "CA 已就绪"
+  },
+  "Install and trust the CA certificate": {
+    "en": "Install and trust the CA certificate",
+    "zh": "安装并信任 CA 证书"
+  },
+  "Certificate ready. HTTPS content can be inspected.": {
+    "en": "Certificate ready. HTTPS content can be inspected.",
+    "zh": "证书已就绪，可以查看 HTTPS 请求内容。"
+  },
+  "Read HTTPS requests. Your system will ask you to approve installation.": {
+    "en": "Read HTTPS requests. Your system will ask you to approve installation.",
+    "zh": "用于查看 HTTPS 请求内容，安装时需要系统授权。"
+  },
+  "Check your computer’s date and time, then open certificate details. Reinstalling the same expired certificate will not renew it.": {
+    "en": "Check your computer’s date and time, then open certificate details. Reinstalling the same expired certificate will not renew it.",
+    "zh": "请检查电脑的日期和时间，再查看证书详情。重新安装同一张过期证书不会延长有效期。"
+  },
+  "Stop desktop and Android capture before installing a certificate.": {
+    "en": "Stop desktop and Android capture before installing a certificate.",
+    "zh": "安装证书前，请先停止电脑和 Android 抓包。"
+  },
+  "Retry check": {
+    "en": "Retry check",
+    "zh": "重新检查"
+  },
+  "Certificate details": {
+    "en": "Certificate details",
+    "zh": "证书详情"
+  },
+  "Install certificate": {
+    "en": "Install certificate",
+    "zh": "安装证书"
+  },
+  "Turn on capture": {
+    "en": "Turn on capture",
+    "zh": "开启抓包"
+  },
+  "Visit a webpage or use an app. Requests will appear here.": {
+    "en": "Visit a webpage or use an app. Requests will appear here.",
+    "zh": "访问网页或操作应用，请求就会出现在这里。"
+  },
+  "Recording is paused. Resume to save new requests.": {
+    "en": "Recording is paused. Resume to save new requests.",
+    "zh": "记录已暂停，恢复后才能保存新请求。"
+  },
+  "Automatically route this computer’s HTTP/HTTPS traffic through mitmAny.": {
+    "en": "Automatically route this computer’s HTTP/HTTPS traffic through mitmAny.",
+    "zh": "自动配置本机系统代理，采集 HTTP/HTTPS 请求。"
+  },
+  "Resume recording": {
+    "en": "Resume recording",
+    "zh": "恢复记录"
+  },
+  "Start capture": {
+    "en": "Start capture",
+    "zh": "开启抓包"
+  },
+  "Capture setup": {
+    "en": "Capture setup",
+    "zh": "抓包设置"
+  },
+  "Close setup": {
+    "en": "Close setup",
+    "zh": "关闭抓包设置"
+  },
+  "Find out why requests are missing": {
+    "en": "Find out why requests are missing",
+    "zh": "为什么没有抓到请求？"
+  },
+  "Your first request, in two steps": {
+    "en": "Your first request, in two steps",
+    "zh": "只需两步，开始第一次抓包"
+  },
+  "Set up this computer once, then start capturing whenever you need it.": {
+    "en": "Set up this computer once, then start capturing whenever you need it.",
+    "zh": "完成本机设置后，以后只需开启抓包。"
+  },
+  "Working… Approve the system prompt if one appears.": {
+    "en": "Working… Approve the system prompt if one appears.",
+    "zh": "正在处理…如出现系统授权提示，请确认。"
+  },
+  "Follow the request": {
+    "en": "Follow the request",
+    "zh": "按步骤检查"
+  },
+  "Certificate → Capture → Proxy → Request → HTTPS content": {
+    "en": "Certificate → Capture → Proxy → Request → HTTPS content",
+    "zh": "证书 → 开启抓包 → 代理 → 收到请求 → HTTPS 内容"
+  },
+  "No requests appear": {
+    "en": "No requests appear",
+    "zh": "没有任何请求"
+  },
+  "Open or refresh a webpage after starting capture. An idle app may not send any requests.": {
+    "en": "Open or refresh a webpage after starting capture. An idle app may not send any requests.",
+    "zh": "开启抓包后，请打开或刷新一个网页。闲置的应用可能不会发送请求。"
+  },
+  "System proxy mode is on. Existing HTTP/HTTPS proxies are chained automatically; you do not normally need to turn them off.": {
+    "en": "System proxy mode is on. Existing HTTP/HTTPS proxies are chained automatically; you do not normally need to turn them off.",
+    "zh": "系统代理模式已开启。原有 HTTP/HTTPS 代理会自动串联，通常不需要关闭。"
+  },
+  "Start capture first. If it fails, the error above stays visible so you can resolve it and retry.": {
+    "en": "Start capture first. If it fails, the error above stays visible so you can resolve it and retry.",
+    "zh": "请先开启抓包。如果失败，上方会保留错误信息，处理后可重试。"
+  },
+  "If another proxy app or VPN overwrites system proxy settings, stop capture, check that app’s proxy mode, and start capture again. Some apps ignore the system proxy; configure their proxy explicitly.": {
+    "en": "If another proxy app or VPN overwrites system proxy settings, stop capture, check that app’s proxy mode, and start capture again. Some apps ignore the system proxy; configure their proxy explicitly.",
+    "zh": "如果其他代理软件或 VPN 覆盖了系统代理设置，请停止抓包，检查该软件的代理模式，再重新开启抓包。部分应用不使用系统代理，需要在应用中单独设置。"
+  },
+  "Requests appear, but HTTPS content is missing": {
+    "en": "Requests appear, but HTTPS content is missing",
+    "zh": "有请求，但看不到 HTTPS 内容"
+  },
+  "Recheck CA trust. Firefox and some apps use their own certificate store. Apps with certificate pinning may reject interception even when the system trusts the CA.": {
+    "en": "Recheck CA trust. Firefox and some apps use their own certificate store. Apps with certificate pinning may reject interception even when the system trusts the CA.",
+    "zh": "请重新检查 CA 信任状态。Firefox 等应用可能使用独立的证书库。启用证书固定的应用即使系统已信任 CA，也可能拒绝抓包。"
+  },
+  "Capture fails or the network stops working": {
+    "en": "Capture fails or the network stops working",
+    "zh": "抓包失败或网络无法连接"
+  },
+  "If the proxy port is in use, stop the other program using that port and retry. To undo mitmAny’s desktop proxy changes, restore the previous network settings below. Android proxy settings are managed separately.": {
+    "en": "If the proxy port is in use, stop the other program using that port and retry. To undo mitmAny’s desktop proxy changes, restore the previous network settings below. Android proxy settings are managed separately.",
+    "zh": "如果代理端口被占用，请停止占用端口的其他程序后重试。要撤销 mitmAny 对电脑系统代理的修改，请点击下方恢复网络。Android 代理需单独管理。"
+  },
+  "Not seeing requests? Troubleshoot": {
+    "en": "Not seeing requests? Troubleshoot",
+    "zh": "没有抓到请求？查看排查指引"
+  },
+  "Back to requests": {
+    "en": "Back to requests",
+    "zh": "返回请求列表"
+  },
+  "Set up later": {
+    "en": "Set up later",
+    "zh": "稍后设置"
+  },
+  "Capture troubleshooting": {
+    "en": "Capture troubleshooting",
+    "zh": "抓包排查"
+  },
+  "No requests match these filters": {
+    "en": "No requests match these filters",
+    "zh": "没有符合筛选条件的请求"
+  },
+  "Ready. Now open a webpage.": {
+    "en": "Ready. Now open a webpage.",
+    "zh": "已开启，现在访问一个网页吧"
+  },
+  "Recording is paused": {
+    "en": "Recording is paused",
+    "zh": "记录已暂停"
+  },
+  "Ready to capture your first request": {
+    "en": "Ready to capture your first request",
+    "zh": "准备就绪，开启第一次抓包"
+  },
+  "Clear the filters to see your captured requests.": {
+    "en": "Clear the filters to see your captured requests.",
+    "zh": "清除筛选条件，即可查看已捕获的请求。"
+  },
+  "Refresh a webpage or use an app, then select a request to inspect it.": {
+    "en": "Refresh a webpage or use an app, then select a request to inspect it.",
+    "zh": "刷新网页或操作应用，再选择请求查看详情。"
+  },
+  "Traffic is still forwarded. Resume recording to save new requests.": {
+    "en": "Traffic is still forwarded. Resume recording to save new requests.",
+    "zh": "流量仍在转发，恢复记录后才能保存新请求。"
+  },
+  "Install the CA certificate, then turn on capture. We’ll handle the system proxy.": {
+    "en": "Install the CA certificate, then turn on capture. We’ll handle the system proxy.",
+    "zh": "安装 CA 证书，再开启抓包。系统代理由软件自动配置。"
+  },
+  "Clear all filters": {
+    "en": "Clear all filters",
+    "zh": "清除全部筛选"
+  },
+  "Manual proxy mode: configure your browser or app to use {p0} for HTTP and HTTPS. To use automatic setup, stop capture with the top toolbar, then start it from this guide.": {
+    "en": "Manual proxy mode: configure your browser or app to use {p0} for HTTP and HTTPS. To use automatic setup, stop capture with the top toolbar, then start it from this guide.",
+    "zh": "当前为手动代理模式：请将浏览器或应用的 HTTP/HTTPS 代理设为 {p0}。要使用自动设置，请先在顶部工具栏停止抓包，再从本指引开启。"
   }
 }

@@ -27,7 +27,6 @@ import {
   Heart,
   Layers3,
   Loader2,
-  LockKeyhole,
   Minus,
   Network,
   Pause,
@@ -43,8 +42,9 @@ import {
   Star,
   Trash2,
   X,
-  Zap,
 } from "lucide-react";
+import CaptureSetup, { CaptureSteps } from "./CaptureSetup";
+import { certificateHealth, certificateLabels, SETUP_KEY, shouldShowSetup } from "./setupState";
 import CodexConnection from "./CodexConnection";
 import SupportDialog from "./SupportDialog";
 import type { AndroidState, AppState, Certificate, Detail, Flow } from "./types";
@@ -111,6 +111,44 @@ function App() {
   const [flows, setFlows] = useState<Flow[]>([]);
   const [stats, setStats] = useState({ total: 0, bytes: 0, dropped: 0 });
   const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [certificateError, setCertificateError] = useState("");
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [troubleshooting, setTroubleshooting] = useState(false);
+  const [captureError, setCaptureError] = useState("");
+  const setupPrompted = useRef(false);
+  const certificateRevision = useRef(0);
+  const health = certificateHealth(certificate, certificateError);
+  const updateCertificate = useCallback((c: Certificate) => { ++certificateRevision.current; setCertificate(c); setCertificateError(""); }, []);
+  const refreshCertificate = useCallback(async () => {
+    const revision = ++certificateRevision.current;
+    try { const c = await api.GetCertificateStatus(); if (revision === certificateRevision.current) updateCertificate(c); return c; }
+    catch (e) { if (revision === certificateRevision.current) setCertificateError(errorText(e)); return null; }
+  }, [updateCertificate]);
+  useEffect(() => {
+    let active = true;
+    const check = async () => {
+      const revision = ++certificateRevision.current;
+      try { const c = await api.GetCertificateStatus(); if (active && revision === certificateRevision.current) updateCertificate(c); }
+      catch (e) { if (active && revision === certificateRevision.current) setCertificateError(errorText(e)); }
+    };
+    void check();
+    const focus = () => { if (document.visibilityState === "visible") void check(); };
+    window.addEventListener("focus", focus);
+    document.addEventListener("visibilitychange", focus);
+    return () => { active = false; window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); };
+  }, [updateCertificate]);
+  useEffect(() => {
+    if (!isDesktop() || setupPrompted.current || health === "checking") return;
+    setupPrompted.current = true;
+    let seen = false;
+    try { seen = localStorage.getItem(SETUP_KEY) === "seen"; } catch { /* Session-only preference. */ }
+    if (shouldShowSetup(seen, health)) setSetupOpen(true);
+  }, [health]);
+  const closeSetup = () => {
+    setSetupOpen(false);
+    try { localStorage.setItem(SETUP_KEY, "seen"); } catch { /* Session-only preference. */ }
+  };
+  const openSetup = (help = false) => { setTroubleshooting(help); setSetupOpen(true); };
   const [selected, setSelected] = useState<string | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -205,11 +243,10 @@ function App() {
   useEffect(() => {
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
-    Promise.all([api.GetState(), api.GetCertificateStatus(), api.GetAndroidState()])
-      .then(([s, c, mobile]) => {
+    Promise.all([api.GetState(), api.GetAndroidState()])
+      .then(([s, mobile]) => {
         if (active) {
           setState(s);
-          setCertificate(c);
           setAndroid(mobile);
         }
       })
@@ -388,21 +425,54 @@ function App() {
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
   }, [visible, selected, compact, mobileSidebarOpen]);
-  const toggleCapture = async () => {
+  const startCapture = async (system: boolean) => {
     setBusy(true);
+    setCaptureError("");
     try {
-      setState(
-        state.running
-          ? await api.StopCapture()
-          : await api.StartCapture(systemProxy),
-      );
+      const c = await refreshCertificate();
+      if (system && certificateHealth(c) !== "ready") { openSetup(); return; }
+      let next = await api.StartCapture(system);
+      if (!next.recording) next = await api.SetRecording(true);
+      setState(next);
+      setSystemProxy(system);
+      closeSetup();
     } catch (e) {
-      notify(errorText(e));
-      if (!state.running && systemProxy && !certificate?.trusted)
-        setCertOpen(true);
-    } finally {
-      setBusy(false);
-    }
+      setCaptureError(errorText(e));
+      openSetup(true);
+    } finally { setBusy(false); }
+  };
+  const toggleCapture = async () => {
+    if (!state.running) { await startCapture(systemProxy); return; }
+    setBusy(true);
+    try { setState(await api.StopCapture()); setCaptureError(""); }
+    catch (e) { setCaptureError(errorText(e)); openSetup(true); }
+    finally { setBusy(false); }
+  };
+  const installCertificate = async () => {
+    setBusy(true); setCaptureError("");
+    try { updateCertificate(await api.InstallCertificate()); }
+    catch (e) { setCaptureError(errorText(e)); }
+    finally { await refreshCertificate(); setBusy(false); }
+  };
+  const resumeRecording = async () => {
+    setBusy(true);
+    try { setState(await api.SetRecording(true)); setCaptureError(""); }
+    catch (e) { setCaptureError(errorText(e)); openSetup(true); }
+    finally { setBusy(false); }
+  };
+  const recoverNetwork = async () => {
+    setBusy(true);
+    try { setState(await api.RecoverNetwork()); setCaptureError(""); }
+    catch (e) { setCaptureError(errorText(e)); openSetup(true); }
+    finally { setBusy(false); }
+  };
+  const setupProps = {
+    health, running: state.running, recording: state.recording,
+    locked: state.running || android.listening, busy,
+    error: captureError || certificateError || state.error || state.storageError || certificate?.error || "",
+    onInstall: installCertificate, onStart: () => state.running && !state.recording ? resumeRecording() : startCapture(true),
+    onCheck: async () => { setBusy(true); try { await refreshCertificate(); } finally { setBusy(false); } },
+    onManage: () => { closeSetup(); setCertOpen(true); },
   };
   const clear = async () => {
     try {
@@ -512,15 +582,19 @@ function App() {
             <b className="live-label">{capturing ? (state.recording ? tr("LIVE") : tr("PAUSED")) : tr("IDLE")}</b>
             {stats.dropped ? <TriangleAlert size={11} aria-hidden="true" /> : null}
           </span>
+          <button className={`certificate-badge ${health}`} onClick={() => openSetup()} title={tr(certificateLabels[health])} aria-label={tr(certificateLabels[health])}>
+            {health === "ready" ? <ShieldCheck size={14} /> : health === "checking" ? <Loader2 size={14} className="spin" /> : <TriangleAlert size={14} />}<span>{tr(certificateLabels[health])}</span>
+          </button>
           <div className="titlebar-drag-space" />
           <div
             className="titlebar-actions"
             role="toolbar"
             aria-label={tr("流量工具")}
           >
+            <button className="titlebar-action" aria-label={tr("Capture troubleshooting")} title={tr("Capture troubleshooting")} onClick={() => openSetup(true)}><CircleHelp size={16} /></button>
             <button className={`titlebar-action android-entry ${android.enabled ? "connected" : ""}`} aria-label={tr("Android 手机代理")} title={android.enabled ? tr("Android 手机代理已开启") : android.pending.length ? tr("Android 手机代理 · 有待恢复设备") : tr("Android 手机代理与 CA 安装")} onClick={() => setAndroidOpen(true)}><Smartphone size={16} /></button>
             <button className="titlebar-action" aria-label={tr("恢复电脑网络")} title={tr("恢复抓包前的电脑系统代理")} disabled={busy}
-              onClick={() => { setBusy(true); api.RecoverNetwork().then(next => { setState(next); notify(tr("电脑系统代理已恢复；手机代理请在 Android 面板恢复")); }).catch(e => notify(errorText(e))).finally(() => setBusy(false)); }}>
+              onClick={recoverNetwork}>
               <RotateCcw size={16} />
             </button>
             <span className="titlebar-divider" />
@@ -679,22 +753,15 @@ function App() {
           </div>
         </aside>
         <main className="main-workspace">
-          {state.error || state.recoveryPending || state.storageError ? (
+          {captureError || state.error || state.recoveryPending || state.storageError ? (
             <div className="network-alert" role="alert">
               <span>
-                {diagnostic(state.error ||
+                {diagnostic(captureError || state.error ||
                   state.storageError ||
                   tr("发现未恢复的系统代理配置"))}
               </span>
-              <button
-                onClick={() =>
-                  api
-                    .RecoverNetwork()
-                    .then(setState)
-                    .catch((e) => notify(errorText(e)))
-                }
-              >
-                {tr("恢复网络")}</button>
+              <button onClick={() => openSetup(true)}>{tr("Capture troubleshooting")}</button>
+              <button disabled={busy} onClick={recoverNetwork}>{tr("恢复网络")}</button>
             </div>
           ) : null}
           <div
@@ -882,47 +949,13 @@ function App() {
                         <span className="orbit-dot b" />
                         <span className="orbit-dot c" />
                       </div>
-                      <span className="eyebrow">{tr("YOUR NETWORK, IN FOCUS")}</span>
-                      <h2>
-                        {flows.length
-                          ? tr("Nothing matches. Yet.")
-                          : capturing
-                            ? tr("Listening to your network.")
-                            : tr("Every request tells a story.")}
-                      </h2>
-                      <p>
-                        {flows.length
-                          ? tr("调整筛选条件，找到你关心的请求。")
-                          : capturing
-                            ? tr("在浏览器或应用中发起请求，流量将在这里实时出现。")
-                            : tr("Capture, inspect, and understand your traffic. 从一个请求开始，看清网络的每一个细节。")}
-                      </p>
-                      {!flows.length ? <div className="capture-guide" aria-label={tr("首次抓包指引")}>
-                        <div><strong>{tr("1 · HTTPS 证书")}</strong><span>{certificate ? certificate.trusted ? tr("已信任，可以查看 HTTPS 正文") : tr("尚未信任，HTTPS 将仅透传") : tr("正在检查证书…")}</span><button className="secondary" onClick={() => setCertOpen(true)}>{tr("管理证书")}</button></div>
-                        <div><strong>{tr("2 · 选择流量来源")}</strong><span>{android.enabled ? tr("Android 手机代理已开启") : state.running ? state.systemProxy ? tr("电脑系统代理已开启") : tr("手动代理模式") : systemProxy ? tr("开始后启用电脑系统代理") : tr("开始后需手动配置代理")}</span><button className="secondary" onClick={() => setAndroidOpen(true)}>{tr("Android 手机")}</button></div>
-                        <div><strong>{tr("3 · 发起请求")}</strong><span>{tr("访问网页或操作应用，再选择请求查看详情。")}</span></div>
-                      </div> : null}
-                      {!flows.length && !capturing ? (
-                        <button
-                          className="primary"
-                          disabled={busy}
-                          onClick={toggleCapture}
-                        >
-                          <Play size={13} fill="currentColor" />
-                          {tr("Start your first capture")}</button>
-                      ) : null}
-                      <div className="empty-capabilities">
-                        <span>
-                          <LockKeyhole size={12} />
-                          HTTPS
-                        </span>
-                        <span>
-                          <Zap size={12} />
-                          {tr("Stream first")}</span>
-                        <span>
-                          <HardDrive size={12} />
-                          {tr("Local only")}</span>
-                      </div>
+                      <h2>{tr(flows.length ? "No requests match these filters" : capturing ? state.recording ? "Ready. Now open a webpage." : "Recording is paused" : health === "ready" ? "Ready to capture your first request" : "Your first request, in two steps")}</h2>
+                      <p>{tr(flows.length ? "Clear the filters to see your captured requests." : capturing ? state.recording ? "Refresh a webpage or use an app, then select a request to inspect it." : "Traffic is still forwarded. Resume recording to save new requests." : "Install the CA certificate, then turn on capture. We’ll handle the system proxy.")}</p>
+                      {flows.length ? <button className="secondary" onClick={() => { setQuery(""); setType("All"); setHost(""); setView("all"); }}>{tr("Clear all filters")}</button> :
+                        <div className="capture-guide"><CaptureSteps {...setupProps} /></div>}
+                      {!flows.length && capturing && !state.recording && !state.running && <button className="primary" disabled={busy} onClick={resumeRecording}>{tr("Resume recording")}</button>}
+                      {!flows.length && android.enabled && <button className="secondary" onClick={() => setAndroidOpen(true)}>{tr("Android 手机代理已开启")}</button>}
+                      <button className="setup-help" onClick={() => openSetup(true)}><CircleHelp size={15} />{tr("Not seeing requests? Troubleshoot")}</button>
                       {!isDesktop() ? (
                         <small className="preview-note">
                           {tr("Browser preview · 网络功能请在桌面应用中使用")}</small>
@@ -986,12 +1019,15 @@ function App() {
 
         </main>
       </div>
+      {setupOpen && <CaptureSetup {...setupProps} troubleshooting={troubleshooting} address={state.address} systemProxy={state.systemProxy}
+        hasRequests={flows.length > 0} recoveryPending={state.recoveryPending} onClose={closeSetup}
+        onTroubleshoot={() => setTroubleshooting(true)} onRecover={recoverNetwork} onAndroid={() => { closeSetup(); setAndroidOpen(true); }} />}
       {androidOpen ? <Suspense fallback={null}><AndroidDialog onClose={() => setAndroidOpen(false)} onUpdate={setAndroid} /></Suspense> : null}
       {certOpen ? (
         <Suspense fallback={null}>
           <CertificateDialog
-            onClose={() => setCertOpen(false)}
-            onUpdate={setCertificate}
+            onClose={() => { setCertOpen(false); void refreshCertificate(); }}
+            onUpdate={updateCertificate}
             running={state.running || android.listening}
           />
         </Suspense>
